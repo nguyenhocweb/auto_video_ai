@@ -1,0 +1,67 @@
+# ==============================================================================
+#                      VIDEO AI PLATFORM - GITIGNORE
+# ==============================================================================
+
+# 1. Environment Variables & Secrets (Bảo mật tuyệt đối không commit API keys)
+.env
+.env.local
+.env.*.local
+*.env
+be/.env
+fe/.env.local
+
+# 2. Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# 3. Node.js & Next.js Build Artifacts
+node_modules/
+fe/node_modules/
+.next/
+fe/.next/
+out/
+fe/out/
+*.tsbuildinfo
+fe/tsconfig.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 4. Storage & Media (Video/Audio/Cache tạm thời - không đẩy lên Git)
+storage/
+be/storage/
+ba/voice_training/
+*.mp4
+*.mp3
+*.wav
+*.m4a
+*.mov
+*.webm
+*.mkv
+*.flac
+*.aac
+ffcache*
+temp_*
+test_*
+
+# 5. IDE & Operating System
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini

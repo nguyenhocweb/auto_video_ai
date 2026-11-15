@@ -1,0 +1,11 @@
+{
+  "include": [
+    "be"
+  ],
+  "extraPaths": [
+    "be",
+    "be/app/core/engines",
+    "C:/Users/win/AppData/Roaming/Python/Python313/site-packages"
+  ],
+  "typeCheckingMode": "basic"
+}
