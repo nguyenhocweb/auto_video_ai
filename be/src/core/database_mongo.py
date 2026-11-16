@@ -15,8 +15,11 @@ class MongoDBManager:
             cls.client = AsyncIOMotorClient(
                 settings.DATABASE_URL,
                 maxPoolSize=50,
-                minPoolSize=5,
-                serverSelectionTimeoutMS=2000,
+                minPoolSize=1,
+                maxIdleTimeMS=45000,
+                serverSelectionTimeoutMS=5000,
+                connectTimeoutMS=10000,
+                socketTimeoutMS=20000,
             )
         return cls.client
 

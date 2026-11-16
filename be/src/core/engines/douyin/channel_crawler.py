@@ -166,7 +166,10 @@ class DouyinChannelCrawler:
                                         captured_videos.extend(author_items)
                                         event.set()
                             except Exception as ex:
-                                logger.error(f"Error parsing json in handle_response: {ex}")
+                                if "Target page, context or browser has been closed" in str(ex):
+                                    logger.debug("Trang/trình duyệt đã đóng khi nhận phản hồi.")
+                                else:
+                                    logger.error(f"Error parsing json in handle_response: {ex}")
                 page.on("response", handle_response)
 
                 try:
