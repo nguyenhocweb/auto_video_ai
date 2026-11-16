@@ -130,7 +130,7 @@ export const PublicSidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 border-r border-gray-200/80 bg-white flex flex-col justify-between p-4 min-h-[calc(100vh-4rem)]">
+    <aside className="hidden md:flex w-64 border-r border-gray-200/80 bg-white flex-col justify-between p-4 min-h-[calc(100vh-4rem)]">
       <div className="space-y-6">
         {/* Nhóm Creator */}
         <div>

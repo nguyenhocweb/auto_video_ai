@@ -2,6 +2,7 @@ import React from "react";
 import { PublicHeader } from "@/src/core/components/layout/public-header";
 import { PublicSidebar } from "@/src/core/components/layout/public-sidebar";
 import { AuthGuard } from "@/src/core/components/auth/AuthGuard";
+import { MobileNav } from "@/src/core/components/layout/MobileNav";
 
 export default function DashboardLayout({
   children,
@@ -14,10 +15,11 @@ export default function DashboardLayout({
         <PublicHeader />
         <div className="flex-1 flex">
           <PublicSidebar />
-          <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">
+          <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full pb-24 md:pb-8">
             {children}
           </main>
         </div>
+        <MobileNav />
       </div>
     </AuthGuard>
   );

@@ -31,11 +31,6 @@ export default function LoginPage() {
     setIsSubmitting(false);
   };
 
-  const handleFillDemo = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center p-4 sm:p-6 text-white">
       <div className="max-w-md w-full space-y-6">
@@ -141,29 +136,6 @@ export default function LoginPage() {
             <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-600 font-semibold">
               Tự nhận diện vai trò
             </span>
-          </div>
-
-          {/* Gợi ý tài khoản demo dạng văn bản nhỏ hỗ trợ điền nhanh */}
-          <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 space-y-1.5">
-            <p className="font-bold text-slate-700 text-[10px] uppercase tracking-wider">
-              Tài khoản thử nghiệm (Bấm để điền nhanh):
-            </p>
-            <div className="flex flex-wrap gap-2 text-[11px]">
-              <button
-                type="button"
-                onClick={() => handleFillDemo("admin@videoai.com", "admin123456")}
-                className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 font-semibold transition-all shadow-2xs"
-              >
-                🛡️ Admin: admin@videoai.com
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFillDemo("user@videoai.com", "user123456")}
-                className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 font-semibold transition-all shadow-2xs"
-              >
-                👤 User: user@videoai.com
-              </button>
-            </div>
           </div>
         </div>
 
