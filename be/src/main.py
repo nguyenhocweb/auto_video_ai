@@ -34,10 +34,11 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Cấu hình CORS
+# Cấu hình CORS (Cho phép local dev và mọi domain triển khai trên Vercel)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=r"^https:\/\/.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
