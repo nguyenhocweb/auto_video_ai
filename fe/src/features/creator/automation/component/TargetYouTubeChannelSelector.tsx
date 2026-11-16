@@ -2,18 +2,22 @@
 
 import React from "react";
 import Image from "next/image";
-import { FaCheck, FaYoutube } from "react-icons/fa";
+import { FaCheck, FaYoutube, FaVideo, FaFilm } from "react-icons/fa";
 import { useYouTubeChannels } from "@/src/features/creator/youtube/hook/useYouTubeChannels";
 import { TargetYouTubeChannelConfig } from "../type/automation.type";
 
 interface TargetYouTubeChannelSelectorProps {
   selectedChannels: TargetYouTubeChannelConfig[];
   onChange: (channels: TargetYouTubeChannelConfig[]) => void;
+  videoType?: "video" | "shorts";
+  onChangeVideoType?: (val: "video" | "shorts") => void;
 }
 
 export const TargetYouTubeChannelSelector: React.FC<TargetYouTubeChannelSelectorProps> = ({
   selectedChannels,
   onChange,
+  videoType = "shorts",
+  onChangeVideoType,
 }) => {
   const { data, isLoading } = useYouTubeChannels();
   const channels = data?.channels || [];
@@ -37,14 +41,49 @@ export const TargetYouTubeChannelSelector: React.FC<TargetYouTubeChannelSelector
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-          <FaYoutube className="text-red-600" /> Chọn Kênh YouTube Shorts đăng tự động:
+          <FaYoutube className="text-red-600" /> Chọn Kênh YouTube đăng tự động:
         </label>
         <span className="text-[11px] font-semibold text-red-600">
           Đã chọn: {selectedChannels.length} kênh
         </span>
+      </div>
+
+      {/* Tùy chọn đăng Shorts vs Video Thường/Dài */}
+      <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-1.5 p-1 bg-gray-100/90 rounded-xl border border-gray-200/60">
+          <button
+            type="button"
+            onClick={() => onChangeVideoType?.("shorts")}
+            className={`py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+              videoType === "shorts"
+                ? "bg-red-600 text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/60"
+            }`}
+          >
+            <FaVideo className="text-[10px]" />
+            Shorts (Ngắn ≤ 60s)
+          </button>
+          <button
+            type="button"
+            onClick={() => onChangeVideoType?.("video")}
+            className={`py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+              videoType === "video"
+                ? "bg-red-600 text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/60"
+            }`}
+          >
+            <FaFilm className="text-[10px]" />
+            Video Thường (Dài 16:9)
+          </button>
+        </div>
+        <p className="text-[10px] text-gray-400 italic px-1">
+          {videoType === "video"
+            ? "*Video Thường: Tự động chuyển khung hình 16:9 ngang kèm nền mờ điện ảnh để YouTube đưa vào mục Video dài."
+            : "*Shorts: Đăng tải video ngắn định dạng Shorts (giữ nguyên khung hình dọc gốc)."}
+        </p>
       </div>
 
       {isLoading ? (

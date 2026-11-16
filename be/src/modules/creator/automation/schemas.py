@@ -33,7 +33,13 @@ class AutomationCampaignCreateRequest(BaseModel):
         default=[], description="Danh sách các Kênh YouTube Shorts đích để đăng bài"
     )
     publish_to_youtube: bool = Field(
-        default=False, description="Tự động xuất bản đồng thời lên Kênh YouTube Shorts"
+        default=False, description="Tự động xuất bản đồng thời lên Kênh YouTube"
+    )
+    youtube_video_type: Optional[str] = Field(
+        default="shorts", description="Loại xuất bản YouTube: 'shorts' (Ngắn ≤ 60s) hoặc 'video' (Dài 16:9)"
+    )
+    fb_post_type: Optional[str] = Field(
+        default="reel", description="Hình thức đăng Facebook: 'reel' (Thước phim) hoặc 'feed' (Bài viết)"
     )
     caption_template: str = Field(
         default="{title}", description="Mẫu tiêu đề/mô tả bài đăng (mặc định lấy {title} đã dịch)"
@@ -114,6 +120,8 @@ class AutomationCampaignUpdateRequest(BaseModel):
     keep_original_audio: Optional[bool] = None
     bgm_volume: Optional[float] = None
     publish_to_youtube: Optional[bool] = None
+    youtube_video_type: Optional[str] = None
+    fb_post_type: Optional[str] = None
     is_active: Optional[bool] = None
 
 
@@ -132,6 +140,8 @@ class PublishedYouTubeResult(BaseModel):
     success: bool
     video_id: Optional[str] = None
     shorts_url: Optional[str] = None
+    watch_url: Optional[str] = None
+    video_type: Optional[str] = "shorts"
     error: Optional[str] = None
 
 
@@ -143,6 +153,8 @@ class AutomationCampaignResponse(BaseModel):
     target_pages: List[TargetPageConfig]
     target_youtube_channels: List[TargetYouTubeChannelConfig] = []
     publish_to_youtube: bool = False
+    youtube_video_type: Optional[str] = "shorts"
+    fb_post_type: Optional[str] = "reel"
     caption_template: str
     hashtags: Optional[str]
     auto_add_title_tag: bool

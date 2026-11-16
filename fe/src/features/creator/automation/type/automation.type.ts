@@ -9,12 +9,14 @@ export interface TargetPageConfig {
   page_id: string;
   page_name: string;
   access_token?: string;
+  post_type?: "reel" | "feed";
 }
 
 export interface TargetYouTubeChannelConfig {
   channel_id: string;
   channel_title: string;
   avatar_url?: string | null;
+  video_type?: "video" | "shorts";
 }
 
 export type ProcessingMode = "both" | "vietsub" | "dubbing" | "download_only";
@@ -44,6 +46,8 @@ export interface AutomationCampaign {
   keep_original_audio?: boolean;
   bgm_volume?: number;
   publish_to_youtube?: boolean;
+  youtube_video_type?: "video" | "shorts";
+  fb_post_type?: "reel" | "feed";
   is_active: boolean;
   status: "idle" | "running" | "paused" | "error";
   last_run_at?: string;
@@ -77,6 +81,8 @@ export interface AutomationCampaignCreatePayload {
   keep_original_audio?: boolean;
   bgm_volume?: number;
   publish_to_youtube?: boolean;
+  youtube_video_type?: "video" | "shorts";
+  fb_post_type?: "reel" | "feed";
   is_active?: boolean;
 }
 
@@ -103,6 +109,8 @@ export interface AutomationCampaignUpdatePayload {
   keep_original_audio?: boolean;
   bgm_volume?: number;
   publish_to_youtube?: boolean;
+  youtube_video_type?: "video" | "shorts";
+  fb_post_type?: "reel" | "feed";
   is_active?: boolean;
 }
 

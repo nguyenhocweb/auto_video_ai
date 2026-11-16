@@ -136,7 +136,7 @@ export const AutomationCampaignCard: React.FC<AutomationCampaignCardProps> = ({
 
           <div className="flex items-center justify-between">
             <span className="text-gray-400 flex items-center gap-1">
-              <FaFacebook className="text-[11px] text-blue-600" /> Fanpage Facebook đích:
+              <FaFacebook className="text-[11px] text-blue-600" /> Fanpage FB ({campaign.fb_post_type === "feed" ? "Bài viết" : "Reels"}):
             </span>
             <span className="font-semibold text-gray-800">
               {campaign.target_pages.length} trang
@@ -146,7 +146,7 @@ export const AutomationCampaignCard: React.FC<AutomationCampaignCardProps> = ({
           {(campaign.target_youtube_channels && campaign.target_youtube_channels.length > 0) || campaign.publish_to_youtube ? (
             <div className="flex items-center justify-between">
               <span className="text-gray-400 flex items-center gap-1">
-                <FaYoutube className="text-[11px] text-red-600" /> Kênh YouTube Shorts:
+                <FaYoutube className="text-[11px] text-red-600" /> YouTube ({campaign.youtube_video_type === "video" ? "Video Dài" : "Shorts"}):
               </span>
               <span className="font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-200 text-[10px]">
                 {campaign.target_youtube_channels && campaign.target_youtube_channels.length > 0

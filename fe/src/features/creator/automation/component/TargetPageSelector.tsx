@@ -2,18 +2,22 @@
 
 import React from "react";
 import Image from "next/image";
-import { FaCheck, FaFacebook, FaFlag } from "react-icons/fa";
+import { FaCheck, FaFacebook, FaFlag, FaVideo, FaFileAlt } from "react-icons/fa";
 import { useFacebookPages } from "@/src/features/creator/facebook/hook/useFacebookPages";
 import { TargetPageConfig } from "../type/automation.type";
 
 interface TargetPageSelectorProps {
   selectedPages: TargetPageConfig[];
   onChange: (pages: TargetPageConfig[]) => void;
+  postType?: "reel" | "feed";
+  onChangePostType?: (val: "reel" | "feed") => void;
 }
 
 export const TargetPageSelector: React.FC<TargetPageSelectorProps> = ({
   selectedPages,
   onChange,
+  postType = "reel",
+  onChangePostType,
 }) => {
   const { data: pages = [], isLoading } = useFacebookPages();
 
@@ -35,7 +39,7 @@ export const TargetPageSelector: React.FC<TargetPageSelectorProps> = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
           <FaFacebook className="text-blue-600" /> Chọn Fanpage Facebook đăng tự động:
@@ -43,6 +47,41 @@ export const TargetPageSelector: React.FC<TargetPageSelectorProps> = ({
         <span className="text-[11px] font-semibold text-blue-600">
           Đã chọn: {selectedPages.length} trang
         </span>
+      </div>
+
+      {/* Tùy chọn đăng Thước phim (Reels) vs Bài viết (Feed) */}
+      <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-1.5 p-1 bg-gray-100/90 rounded-xl border border-gray-200/60">
+          <button
+            type="button"
+            onClick={() => onChangePostType?.("reel")}
+            className={`py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+              postType === "reel"
+                ? "bg-blue-600 text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/60"
+            }`}
+          >
+            <FaVideo className="text-[10px]" />
+            Thước phim (Reels)
+          </button>
+          <button
+            type="button"
+            onClick={() => onChangePostType?.("feed")}
+            className={`py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+              postType === "feed"
+                ? "bg-blue-600 text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/60"
+            }`}
+          >
+            <FaFileAlt className="text-[10px]" />
+            Bài viết (Feed)
+          </button>
+        </div>
+        <p className="text-[10px] text-gray-400 italic px-1">
+          {postType === "feed"
+            ? "*Bài viết (Feed): Đăng video lên bảng tin trang Fanpage."
+            : "*Thước phim (Reels): Đăng video vào mục Facebook Reels tự động."}
+        </p>
       </div>
 
       {isLoading ? (

@@ -39,6 +39,8 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
   const [sourceChannels, setSourceChannels] = useState<SourceChannelConfig[]>([]);
   const [targetPages, setTargetPages] = useState<TargetPageConfig[]>([]);
   const [targetYouTubeChannels, setTargetYouTubeChannels] = useState<TargetYouTubeChannelConfig[]>([]);
+  const [fbPostType, setFbPostType] = useState<"reel" | "feed">("reel");
+  const [ytVideoType, setYtVideoType] = useState<"video" | "shorts">("shorts");
   const [intervalMin, setIntervalMin] = useState<number>(30);
   const [onlyToday, setOnlyToday] = useState(true);
   const [maxVideoAgeHours, setMaxVideoAgeHours] = useState<number>(24);
@@ -63,6 +65,8 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       setSourceChannels(initialData.source_channels);
       setTargetPages(initialData.target_pages);
       setTargetYouTubeChannels(initialData.target_youtube_channels || []);
+      setFbPostType(initialData.fb_post_type || "reel");
+      setYtVideoType(initialData.youtube_video_type || "shorts");
       setIntervalMin(initialData.crawl_interval_minutes);
       setOnlyToday(initialData.only_today);
       setMaxVideoAgeHours(
@@ -85,6 +89,8 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       setSourceChannels([]);
       setTargetPages([]);
       setTargetYouTubeChannels([]);
+      setFbPostType("reel");
+      setYtVideoType("shorts");
       setIntervalMin(30);
       setOnlyToday(true);
       setMaxVideoAgeHours(24);
@@ -124,6 +130,8 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       target_pages: targetPages,
       target_youtube_channels: targetYouTubeChannels,
       publish_to_youtube: targetYouTubeChannels.length > 0,
+      youtube_video_type: ytVideoType,
+      fb_post_type: fbPostType,
       crawl_interval_minutes: Number(intervalMin),
       only_today: maxVideoAgeHours > 0 && maxVideoAgeHours <= 24,
       max_video_age_hours: Number(maxVideoAgeHours),
@@ -193,11 +201,15 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
           <TargetPageSelector
             selectedPages={targetPages}
             onChange={(pages) => setTargetPages(pages)}
+            postType={fbPostType}
+            onChangePostType={setFbPostType}
           />
 
           <TargetYouTubeChannelSelector
             selectedChannels={targetYouTubeChannels}
             onChange={(chs) => setTargetYouTubeChannels(chs)}
+            videoType={ytVideoType}
+            onChangeVideoType={setYtVideoType}
           />
 
           <CrawlStrategySection

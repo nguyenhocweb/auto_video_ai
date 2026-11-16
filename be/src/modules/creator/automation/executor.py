@@ -20,29 +20,11 @@ logger = logging.getLogger("automation_executor")
 
 class AutomationExecutor:
     # Proxy helpers for backward compatibility
-    @staticmethod
-    def remove_vietnamese_accents(text: str) -> str:
-        return ExecutorHelpers.remove_vietnamese_accents(text)
-
-    @staticmethod
-    def clean_douyin_title(raw_text: str) -> str:
-        return ExecutorHelpers.clean_douyin_title(raw_text)
-
-    @staticmethod
-    async def translate_to_vietnamese(text: str) -> str:
-        return await ExecutorHelpers.translate_to_vietnamese(text)
-
-    @staticmethod
-    def generate_hashtags(
-        title: str,
-        config_hashtags: Optional[str] = None,
-        auto_add_title_tag: bool = True,
-    ) -> str:
-        return ExecutorHelpers.generate_hashtags(title, config_hashtags, auto_add_title_tag)
-
-    @staticmethod
-    def download_stream_to_file(video_stream_url: str, output_path: str) -> None:
-        return ExecutorHelpers.download_stream_to_file(video_stream_url, output_path)
+    remove_vietnamese_accents = staticmethod(ExecutorHelpers.remove_vietnamese_accents)
+    clean_douyin_title = staticmethod(ExecutorHelpers.clean_douyin_title)
+    translate_to_vietnamese = staticmethod(ExecutorHelpers.translate_to_vietnamese)
+    generate_hashtags = staticmethod(ExecutorHelpers.generate_hashtags)
+    download_stream_to_file = staticmethod(ExecutorHelpers.download_stream_to_file)
 
     @staticmethod
     def _run_crawler_in_proactor(channel_url: str, limit: int = 15) -> List[Dict[str, Any]]:
@@ -63,18 +45,19 @@ class AutomationExecutor:
 
     @classmethod
     async def _publish_to_facebook(
-        cls, pages: List[Dict[str, Any]], video_path: str, caption: str
+        cls, pages: List[Dict[str, Any]], video_path: str, caption: str, post_type: str = "reel"
     ) -> List[Dict[str, Any]]:
-        """Đăng Reels lên danh sách Fanpage Facebook đã chọn."""
+        """Đăng Reels / Bài viết lên danh sách Fanpage Facebook đã chọn."""
         results: List[Dict[str, Any]] = []
         for p in pages:
             page_id = str(p.get("page_id"))
             page_name = p.get("page_name", f"Page {page_id}")
             token = p.get("access_token")
+            p_type = p.get("post_type") or post_type
             try:
-                logger.info(f"Đang đăng Reel lên Fanpage: {page_name} ({page_id})...")
+                logger.info(f"Đang đăng {p_type} lên Fanpage: {page_name} ({page_id})...")
                 res = await FacebookService.publish_reel(
-                    PublishReelRequest(page_id=page_id, video_path=video_path, caption=caption, access_token=token)
+                    PublishReelRequest(page_id=page_id, video_path=video_path, caption=caption, access_token=token, post_type=p_type)
                 )
                 results.append({
                     "page_id": page_id, "page_name": page_name,
@@ -97,11 +80,13 @@ class AutomationExecutor:
         video_path: str,
         title: str,
         description: str,
+        video_type: str = "shorts",
     ) -> List[Dict[str, Any]]:
-        """Tự động xuất bản video lên danh sách Kênh YouTube Shorts được chọn."""
+        """Tự động xuất bản video lên danh sách Kênh YouTube (Shorts hoặc Video dài 16:9)."""
         results: List[Dict[str, Any]] = []
         yt_service = YouTubeService()
-        clean_title = (title[:90] + " #shorts").strip() if len(title) > 90 else f"{title} #shorts"
+        is_shorts = (video_type == "shorts")
+        clean_title = (title[:90] + " #shorts").strip() if is_shorts and len(title) > 90 else f"{title} #shorts" if is_shorts else title[:100].strip()
 
         # Nếu không chỉ định kênh, mặc định đăng lên kênh đầu tiên của user
         channel_list = channels if channels else [{"channel_id": None, "channel_title": "Kênh YouTube"}]
@@ -109,8 +94,9 @@ class AutomationExecutor:
         for ch in channel_list:
             ch_id = ch.get("channel_id")
             ch_title = ch.get("channel_title") or f"Kênh {ch_id or ''}"
+            ch_vtype = ch.get("video_type") or video_type
             try:
-                logger.info(f"Đang đăng video lên YouTube Shorts kênh '{ch_title}' ({ch_id})...")
+                logger.info(f"Đang đăng video ({ch_vtype}) lên YouTube kênh '{ch_title}' ({ch_id})...")
                 res = await yt_service.publish_shorts(
                     user_id=user_id,
                     req=PublishShortsRequest(
@@ -119,6 +105,7 @@ class AutomationExecutor:
                         title=clean_title,
                         description=description,
                         privacy_status="public",
+                        video_type=ch_vtype,
                     ),
                 )
                 results.append({
@@ -127,10 +114,12 @@ class AutomationExecutor:
                     "success": res.success,
                     "video_id": res.video_id,
                     "shorts_url": res.shorts_url,
+                    "watch_url": res.watch_url,
+                    "video_type": ch_vtype,
                     "error": res.error,
                 })
             except Exception as yt_err:
-                logger.error(f"Lỗi xuất bản YouTube Shorts kênh '{ch_title}': {yt_err}")
+                logger.error(f"Lỗi xuất bản YouTube kênh '{ch_title}': {yt_err}")
                 results.append({
                     "channel_id": ch_id,
                     "channel_title": ch_title,
@@ -258,11 +247,13 @@ class AutomationExecutor:
 
             # 4. Xuất bản lên Fanpage Facebook (nếu có chọn)
             target_pages = campaign.get("target_pages", [])
-            published_pages = await cls._publish_to_facebook(target_pages, ready_video_path, final_caption)
+            fb_type = campaign.get("fb_post_type", "reel")
+            published_pages = await cls._publish_to_facebook(target_pages, ready_video_path, final_caption, post_type=fb_type)
 
-            # 5. Xuất bản lên Kênh YouTube Shorts (nếu có chọn hoặc bật)
+            # 5. Xuất bản lên Kênh YouTube (nếu có chọn hoặc bật)
             target_yt_channels = campaign.get("target_youtube_channels", [])
             publish_to_yt = campaign.get("publish_to_youtube", False) or len(target_yt_channels) > 0
+            yt_type = campaign.get("youtube_video_type", "shorts")
             published_youtube: List[Dict[str, Any]] = []
 
             if publish_to_yt:
@@ -272,6 +263,7 @@ class AutomationExecutor:
                     video_path=ready_video_path,
                     title=translated_title,
                     description=final_caption,
+                    video_type=yt_type,
                 )
         finally:
             # Dọn dẹp triệt để toàn bộ file video tạm sau khi đăng bài để chống tràn ổ cứng
