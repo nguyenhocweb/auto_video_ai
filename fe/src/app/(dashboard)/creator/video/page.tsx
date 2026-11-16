@@ -9,7 +9,7 @@ import { SavedChannelsSection } from "@/src/features/creator/video/component/Sav
 import { DubbingJobsTable } from "@/src/features/creator/video/component/DubbingJobsTable";
 import { TemplateSlicerModal } from "@/src/features/creator/video/component/TemplateSlicerModal";
 import { ChannelTodayVideosResponse } from "@/src/features/creator/video/type/video.type";
-import { FaCloudDownloadAlt, FaPlayCircle, FaUsers, FaCut } from "react-icons/fa";
+import { FaPlayCircle, FaUsers, FaCut } from "react-icons/fa";
 
 export default function CreatorVideoDownloadPage() {
   const [activeTab, setActiveTab] = useState<"single" | "channel">("single");
@@ -23,9 +23,6 @@ export default function CreatorVideoDownloadPage() {
     <FadeIn className="max-w-5xl mx-auto px-4 py-8 space-y-8">
       {/* Header Giới Thiệu Tinh Gọn */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold mb-3 shadow-xs">
-          <FaCloudDownloadAlt /> Douyin Video AI Downloader & Dubbing
-        </div>
         <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
           Auto Tải Video & Vietsub Thuyết Minh AI
         </h1>

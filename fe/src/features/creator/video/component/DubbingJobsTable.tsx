@@ -27,7 +27,7 @@ export const DubbingJobsTable: React.FC = () => {
   const [selectedDetailJob, setSelectedDetailJob] = useState<DubbingHistoryItem | null>(null);
   const [selectedPublishJob, setSelectedPublishJob] = useState<DubbingHistoryItem | null>(null);
 
-  const { isConnected: isWsConnected } = useNotificationSocket();
+  useNotificationSocket();
   const { data, isLoading, isError, error, refetch } = useDubbingHistory(page, limit);
   const deleteMutation = useDeleteDubbingJob();
   const retryMutation = useRetryDubbingJob();
@@ -52,14 +52,6 @@ export const DubbingJobsTable: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
-              isWsConnected ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-700 border border-amber-200"
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${isWsConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`} />
-            {isWsConnected ? "Socket Realtime" : "Đang kết nối..."}
-          </span>
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-gray-500">Hiển thị:</span>
             <select

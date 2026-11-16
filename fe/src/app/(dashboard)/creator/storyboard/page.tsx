@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { FadeIn } from "@/src/core/components/animation/FadeIn";
-import { FaFilm } from "react-icons/fa";
 import { toast } from "sonner";
 import { StoryboardInputForm } from "@/src/features/creator/storyboard/component/StoryboardInputForm";
 import { SceneCardItem } from "@/src/features/creator/storyboard/component/SceneCardItem";
@@ -178,9 +177,6 @@ export default function StoryboardStudioPage() {
     <FadeIn className="max-w-5xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200 text-xs font-bold shadow-xs">
-          <FaFilm /> AI Storyboard Studio
-        </div>
         <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
           Xưởng Kể Chuyện & Phim Hoạt Hình AI
         </h1>

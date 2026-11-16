@@ -155,9 +155,6 @@ export const VideoExtractForm: React.FC = () => {
             <span>Cấu Hình Tự Động Vietsub & Lồng Tiếng (AI Dubbing)</span>
             <span className="text-[10px] text-gray-400">({showConfig ? "Thu gọn" : "Mở rộng"})</span>
           </button>
-          <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">
-            Tự động lưu Cloudinary
-          </span>
         </div>
 
         {/* Khu vực Cấu hình khi mở rộng */}

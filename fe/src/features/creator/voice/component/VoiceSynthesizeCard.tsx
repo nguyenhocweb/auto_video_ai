@@ -152,7 +152,7 @@ export const VoiceSynthesizeCard: React.FC<VoiceSynthesizeCardProps> = ({
           ) : (
             <>
               <FaMagic className="text-lg" />
-              <span>Tạo Giọng Nói Ngay Tức Thì (Chạy Ngầm & Báo Socket)</span>
+              <span>Tạo Giọng Nói Ngay Tức Thì</span>
             </>
           )}
         </button>

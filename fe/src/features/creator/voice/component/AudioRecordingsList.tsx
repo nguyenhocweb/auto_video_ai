@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import {
   FaFolderOpen,
-  FaWifi,
   FaChevronLeft,
   FaChevronRight,
   FaSpinner,
@@ -48,20 +47,6 @@ export const AudioRecordingsList: React.FC = () => {
           <p className="text-xs text-gray-500 mt-0.5">
             Chỉ bạn mới có quyền nghe và quản lý các bản thuyết minh do chính tài khoản của bạn tạo
           </p>
-        </div>
-
-        {/* Real-time socket badge */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-              isConnected
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : "bg-gray-50 text-gray-600 border-gray-200"
-            }`}
-          >
-            <FaWifi className={isConnected ? "text-emerald-500 animate-pulse" : "text-gray-400"} />
-            {isConnected ? "Socket Trực Tiếp" : "Đang kết nối lại..."}
-          </span>
         </div>
       </div>
 
