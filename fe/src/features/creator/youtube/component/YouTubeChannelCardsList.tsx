@@ -76,12 +76,12 @@ export const YouTubeChannelCardsList: React.FC<YouTubeChannelCardsListProps> = (
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={onRefresh}
               disabled={isLoading || isFetching}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
             >
               <FaSyncAlt className={`text-xs ${isFetching ? "animate-spin" : ""}`} />
               <span>Làm mới</span>
@@ -90,10 +90,10 @@ export const YouTubeChannelCardsList: React.FC<YouTubeChannelCardsListProps> = (
               type="button"
               onClick={() => connectMutation.mutate()}
               disabled={connectMutation.isPending}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50"
             >
-              <FaPlus className="text-xs" />
-              <span>Thêm Kênh YouTube Mới</span>
+              <FaPlus className="text-xs shrink-0" />
+              <span className="truncate">Thêm Kênh Mới</span>
             </button>
           </div>
         </div>

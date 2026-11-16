@@ -46,23 +46,23 @@ export const GroqKeysStats: React.FC<GroqKeysStatsProps> = ({ keys }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
       {stats.map((item, idx) => {
         const Icon = item.icon;
         return (
           <div
             key={idx}
-            className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-start justify-between"
+            className="bg-white rounded-2xl p-3.5 sm:p-5 border border-gray-100 shadow-sm flex items-start justify-between gap-2"
           >
-            <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 truncate">
                 {item.title}
               </p>
-              <h3 className="text-2xl font-black text-gray-900 mb-1">{item.value}</h3>
-              <p className="text-xs text-gray-500">{item.subtext}</p>
+              <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-0.5">{item.value}</h3>
+              <p className="text-[10px] sm:text-xs text-gray-500 line-clamp-1">{item.subtext}</p>
             </div>
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center border ${item.color}`}>
-              <Icon className="text-lg" />
+            <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center border shrink-0 ${item.color}`}>
+              <Icon className="text-sm sm:text-lg" />
             </div>
           </div>
         );

@@ -73,7 +73,7 @@ export const BgmSourcesCard: React.FC = () => {
               href={src.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group bg-white/90 hover:bg-white border border-gray-200/80 hover:border-indigo-400 rounded-xl p-3.5 transition-all shadow-2xs hover:shadow-sm flex flex-col justify-between"
+              className="group bg-white/90 hover:bg-white border border-gray-200/80 hover:border-indigo-400 rounded-xl p-3 sm:p-3.5 transition-all shadow-2xs hover:shadow-sm flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-2">

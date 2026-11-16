@@ -86,30 +86,32 @@ export const YouTubeStudioView: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <button
-              type="button"
-              onClick={handleRefreshAll}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl transition-all shadow-xs cursor-pointer"
-            >
-              <FaSyncAlt className={`text-xs ${isFetchingChannels ? "animate-spin" : ""}`} />
-              <span>Đồng bộ</span>
-            </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+              <button
+                type="button"
+                onClick={handleRefreshAll}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl transition-all shadow-xs cursor-pointer"
+              >
+                <FaSyncAlt className={`text-xs ${isFetchingChannels ? "animate-spin" : ""}`} />
+                <span>Đồng bộ</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setIsConfigModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl transition-all shadow-xs cursor-pointer"
-            >
-              <FaCog className="text-xs text-gray-500" />
-              <span>Cấu hình API</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setIsConfigModalOpen(true)}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl transition-all shadow-xs cursor-pointer"
+              >
+                <FaCog className="text-xs text-gray-500" />
+                <span>Cấu hình API</span>
+              </button>
+            </div>
 
             <button
               type="button"
               onClick={() => setIsPublishModalOpen(true)}
               disabled={channels.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-md shadow-red-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-md shadow-red-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer w-full sm:w-auto"
             >
               <FaPlus />
               <span>Đăng Shorts Mới</span>

@@ -60,24 +60,24 @@ export const YouTubeStatsOverview: React.FC<YouTubeStatsOverviewProps> = ({
         </div>
 
         {/* Nút thao tác */}
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="grid grid-cols-2 sm:flex items-center gap-2.5 w-full sm:w-auto">
           <a
             href={channelUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-white/10 hover:bg-white/20 text-white rounded-xl backdrop-blur-sm border border-white/20 transition-all shadow-xs"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold bg-white/10 hover:bg-white/20 text-white rounded-xl backdrop-blur-sm border border-white/20 transition-all shadow-xs"
           >
-            <FaExternalLinkAlt className="text-[11px]" />
-            <span>Mở Kênh YouTube</span>
+            <FaExternalLinkAlt className="text-[11px] shrink-0" />
+            <span className="truncate">Mở Kênh YouTube</span>
           </a>
 
           <button
             type="button"
             onClick={onOpenPublishModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-white text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-white text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
           >
-            <FaPlus className="text-xs" />
-            <span>Đăng Shorts Mới</span>
+            <FaPlus className="text-xs shrink-0" />
+            <span className="truncate">Đăng Shorts Mới</span>
           </button>
         </div>
       </div>

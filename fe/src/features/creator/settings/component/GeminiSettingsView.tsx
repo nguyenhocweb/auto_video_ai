@@ -41,26 +41,26 @@ export const GeminiSettingsView: React.FC = () => {
     <FadeIn duration={250}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Page Header */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-amber-500/20">
-              <FaSlidersH className="text-xl" />
+        <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+              <FaSlidersH className="text-lg sm:text-xl" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-gray-900">Cấu hình Translation AI &amp; Key Pools</h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight">Cấu hình Translation AI &amp; Key Pools</h1>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
                   <FaBolt className="text-[10px]" /> Auto Failover Chain
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Quản lý kho API Key riêng biệt cho Groq Cloud và Google Gemini, kiểm tra phản hồi tức thì
               </p>
             </div>
           </div>
 
           {/* Action Buttons based on Active Tab */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full md:w-auto">
             {activeTab === "groq" ? (
               <>
                 <button
@@ -69,16 +69,18 @@ export const GeminiSettingsView: React.FC = () => {
                     setSelectedGroqKey(null);
                     setIsGroqTesterOpen(true);
                   }}
-                  className="px-4 py-2.5 text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 active:bg-amber-200 border border-amber-200 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+                  className="px-3 sm:px-4 py-2.5 text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 active:bg-amber-200 border border-amber-200 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5"
                 >
-                  <FaBolt className="text-amber-600" /> Kiểm Tra Key Groq
+                  <FaBolt className="text-amber-600 shrink-0" />
+                  <span className="truncate">Kiểm Tra Groq</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsGroqAddOpen(true)}
-                  className="px-5 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 rounded-xl shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
+                  className="px-4 sm:px-5 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 rounded-xl shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5"
                 >
-                  <FaPlus className="text-[10px]" /> Thêm Groq Key
+                  <FaPlus className="text-[10px] shrink-0" />
+                  <span className="truncate">Thêm Groq Key</span>
                 </button>
               </>
             ) : (
@@ -89,16 +91,18 @@ export const GeminiSettingsView: React.FC = () => {
                     setSelectedGeminiKey(null);
                     setIsGeminiTesterOpen(true);
                   }}
-                  className="px-4 py-2.5 text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 border border-blue-200 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+                  className="px-3 sm:px-4 py-2.5 text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 border border-blue-200 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5"
                 >
-                  <FaBolt className="text-blue-600" /> Kiểm Tra Key Gemini
+                  <FaBolt className="text-blue-600 shrink-0" />
+                  <span className="truncate">Kiểm Tra Gemini</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsGeminiAddOpen(true)}
-                  className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+                  className="px-4 sm:px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5"
                 >
-                  <FaPlus className="text-[10px]" /> Thêm Gemini Key
+                  <FaPlus className="text-[10px] shrink-0" />
+                  <span className="truncate">Thêm Gemini Key</span>
                 </button>
               </>
             )}
@@ -132,19 +136,19 @@ export const GeminiSettingsView: React.FC = () => {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 border-b border-gray-200 pb-3">
           <button
             type="button"
             onClick={() => setActiveTab("groq")}
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${
+            className={`px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
               activeTab === "groq"
                 ? "bg-amber-500 text-white shadow-md shadow-amber-500/25"
                 : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
             }`}
           >
             <FaBolt className={activeTab === "groq" ? "text-white" : "text-amber-500"} />
-            Kho Groq API Keys (Ưu Tiên Hàng Đầu)
-            <span className="px-2 py-0.5 rounded-full text-[10px] bg-white/20 text-current">
+            <span className="truncate">Kho Groq Keys</span>
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-current shrink-0">
               {groqKeys.length}
             </span>
           </button>
@@ -152,15 +156,15 @@ export const GeminiSettingsView: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab("gemini")}
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${
+            className={`px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
               activeTab === "gemini"
                 ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                 : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
             }`}
           >
             <FaRobot className={activeTab === "gemini" ? "text-white" : "text-blue-500"} />
-            Kho Google Gemini Keys (Dự Phòng Số 2)
-            <span className="px-2 py-0.5 rounded-full text-[10px] bg-white/20 text-current">
+            <span className="truncate">Kho Gemini Keys</span>
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-current shrink-0">
               {geminiKeys.length}
             </span>
           </button>

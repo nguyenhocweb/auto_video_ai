@@ -133,32 +133,34 @@ export const FacebookStudioView: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setIsTokenModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-xl transition-colors shadow-sm cursor-pointer"
-            >
-              <FaKey className="text-amber-600 text-xs" />
-              Cập nhật Token
-            </button>
-            <button
-              type="button"
-              onClick={handleRefreshAll}
-              disabled={isSyncing}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200/80 hover:bg-gray-50 rounded-xl transition-colors shadow-sm cursor-pointer disabled:opacity-50"
-            >
-              <FaSyncAlt className={`text-xs text-gray-500 ${isSyncing ? "animate-spin text-blue-600" : ""}`} />
-              <span>{isSyncing ? "Đang quét Meta..." : "Đồng bộ dữ liệu"}</span>
-            </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+              <button
+                type="button"
+                onClick={() => setIsTokenModalOpen(true)}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-xl transition-colors shadow-xs cursor-pointer"
+              >
+                <FaKey className="text-amber-600 text-xs shrink-0" />
+                <span className="truncate">Cập nhật Token</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleRefreshAll}
+                disabled={isSyncing}
+                className="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200/80 hover:bg-gray-50 rounded-xl transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                <FaSyncAlt className={`text-xs text-gray-500 shrink-0 ${isSyncing ? "animate-spin text-blue-600" : ""}`} />
+                <span className="truncate">{isSyncing ? "Đang quét..." : "Đồng bộ"}</span>
+              </button>
+            </div>
             <button
               type="button"
               onClick={() => setIsPublishModalOpen(true)}
               disabled={!selectedPage}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50 w-full sm:w-auto"
             >
-              <FaPlus className="text-xs" />
-              Đăng Thước phim mới
+              <FaPlus className="text-xs shrink-0" />
+              <span>Đăng Thước phim mới</span>
             </button>
           </div>
         </div>

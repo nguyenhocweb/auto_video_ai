@@ -85,17 +85,17 @@ export default function BgmStudioPage() {
         />
 
         {/* Page Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/80 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white rounded-xl shadow-xs">
+            <div className="p-3 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white rounded-xl shadow-xs shrink-0">
               <FaHeadphones className="text-xl" />
             </div>
             <div>
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900">
-                Kho Nhạc Nền (BGM Library) & Nghe Thử Trực Tuyến
+              <h1 className="text-base sm:text-xl font-bold text-gray-900 tracking-tight">
+                Kho Nhạc Nền (BGM Library) &amp; Nghe Thử Trực Tuyến
               </h1>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Tuyển tập nhạc sạch bản quyền (No-Copyright) & Nhạc tải lên riêng cho Mô hình 2 Auto Re-up
+              <p className="text-xs text-gray-500 mt-0.5 line-clamp-1 sm:line-clamp-none">
+                Tuyển tập nhạc sạch bản quyền (No-Copyright) &amp; Nhạc ghép tự động
               </p>
             </div>
           </div>
@@ -103,10 +103,10 @@ export default function BgmStudioPage() {
           <button
             type="button"
             onClick={() => setIsUploadOpen(true)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors"
+            className="w-full sm:w-auto justify-center px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors shrink-0"
           >
             <FaPlus className="text-xs" />
-            Tải Lên Bài Nhạc Của Bạn
+            <span>Tải Lên Bài Nhạc Mới</span>
           </button>
         </div>
 
