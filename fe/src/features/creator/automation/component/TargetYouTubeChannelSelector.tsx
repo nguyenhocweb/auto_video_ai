@@ -81,8 +81,8 @@ export const TargetYouTubeChannelSelector: React.FC<TargetYouTubeChannelSelector
         </div>
         <p className="text-[10px] text-gray-400 italic px-1">
           {videoType === "video"
-            ? "*Video Thường: Tự động chuyển khung hình 16:9 ngang kèm nền mờ điện ảnh để YouTube đưa vào mục Video dài."
-            : "*Shorts: Đăng tải video ngắn định dạng Shorts (giữ nguyên khung hình dọc gốc)."}
+            ? "*Video Thường: Tự động ghép khung 16:9 ngang kèm nền mờ để YouTube nhận diện đúng Video dài."
+            : "*Shorts: Tự động ghép khung 9:16 dọc kèm nền mờ nếu video sai tỷ lệ, chống bị YouTube phân loại thành Video dài."}
         </p>
       </div>
 

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 import httpx
 from src.core.config import settings
+from src.core.engines.youtube.video_aspect_converter import VideoAspectConverter
 
 logger = logging.getLogger("youtube_publisher")
 
@@ -137,82 +138,94 @@ class YouTubePublisher:
         clean_desc = description.strip()
 
         is_shorts = (video_type == "shorts")
+        converted_file: Optional[Path] = None
 
-        if is_shorts:
-            if "#Shorts" not in clean_title and "#shorts" not in clean_title:
-                clean_title = f"{clean_title} #Shorts"
-            if "#Shorts" not in clean_desc and "#shorts" not in clean_desc:
-                clean_desc = f"{clean_desc}\n\n#Shorts #Viral"
-            default_tags = ["Shorts", "Viral", "Reels"]
-        else:
-            # Video thường/dài: Đảm bảo chuyển sang tỷ lệ 16:9 nếu file là video dọc
-            # để YouTube không tự động ép biến thành Shorts
-            from src.core.engines.youtube.video_aspect_converter import VideoAspectConverter
-            video_path = VideoAspectConverter.ensure_horizontal_16_9(str(p))
-            p = Path(video_path)
-            file_size = p.stat().st_size
-            default_tags = ["Review Phim", "Phim Hay", "Video"]
+        try:
+            if is_shorts:
+                conv = VideoAspectConverter.ensure_vertical_9_16(str(p))
+                if conv != str(p):
+                    converted_file = Path(conv)
+                    p = converted_file
+                file_size = p.stat().st_size
+                if "#Shorts" not in clean_title and "#shorts" not in clean_title:
+                    clean_title = f"{clean_title} #Shorts"
+                if "#Shorts" not in clean_desc and "#shorts" not in clean_desc:
+                    clean_desc = f"{clean_desc}\n\n#Shorts #Viral"
+                default_tags = ["Shorts", "Viral", "Reels"]
+            else:
+                conv = VideoAspectConverter.ensure_horizontal_16_9(str(p))
+                if conv != str(p):
+                    converted_file = Path(conv)
+                    p = converted_file
+                file_size = p.stat().st_size
+                default_tags = ["Review Phim", "Phim Hay", "Video"]
 
-        clean_title = clean_title[:100]  # Giới hạn 100 ký tự của YouTube
+            clean_title = clean_title[:100]  # Giới hạn 100 ký tự của YouTube
 
-        meta_payload = {
-            "snippet": {
-                "title": clean_title,
-                "description": clean_desc,
-                "tags": tags or default_tags,
-                "categoryId": "22",  # People & Blogs / Film
-            },
-            "status": {
-                "privacyStatus": privacy_status,
-                "selfDeclaredMadeForKids": False,
-            },
-        }
-
-        # Bước 1: Khởi tạo Resumable Upload Session
-        init_url = f"{UPLOAD_BASE}/videos?uploadType=resumable&part=snippet,status"
-        init_headers = {
-            "Authorization": f"Bearer {access_token.strip()}",
-            "Content-Type": "application/json; charset=UTF-8",
-            "X-Upload-Content-Type": "video/mp4",
-            "X-Upload-Content-Length": str(file_size),
-        }
-
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            init_res = await client.post(init_url, headers=init_headers, json=meta_payload)
-            if init_res.status_code != 200:
-                raise ValueError(f"Lỗi khởi tạo upload YouTube: {init_res.text}")
-
-            upload_url = init_res.headers.get("Location")
-            if not upload_url:
-                raise ValueError("Không nhận được Upload Location từ YouTube.")
-
-            # Bước 2: Truyền stream video lên máy chủ YouTube
-            with open(p, "rb") as f:
-                video_data = f.read()
-
-            upload_headers = {
-                "Content-Type": "video/mp4",
-                "Content-Length": str(file_size),
+            meta_payload = {
+                "snippet": {
+                    "title": clean_title,
+                    "description": clean_desc,
+                    "tags": tags or default_tags,
+                    "categoryId": "22",  # People & Blogs / Film
+                },
+                "status": {
+                    "privacyStatus": privacy_status,
+                    "selfDeclaredMadeForKids": False,
+                },
             }
 
-            upload_res = await client.put(upload_url, headers=upload_headers, content=video_data, timeout=600.0)
-            if upload_res.status_code not in [200, 201]:
-                raise ValueError(f"Lỗi tải video lên YouTube: {upload_res.text}")
-
-            result_data = upload_res.json()
-            vid_id = str(result_data.get("id", ""))
-            shorts_url = f"https://www.youtube.com/shorts/{vid_id}"
-            watch_url = f"https://www.youtube.com/watch?v={vid_id}"
-
-            return {
-                "video_id": vid_id,
-                "shorts_url": shorts_url,
-                "watch_url": watch_url,
-                "video_url": shorts_url if is_shorts else watch_url,
-                "video_type": "shorts" if is_shorts else "video",
-                "title": clean_title,
-                "status": privacy_status,
+            # Bước 1: Khởi tạo Resumable Upload Session
+            init_url = f"{UPLOAD_BASE}/videos?uploadType=resumable&part=snippet,status"
+            init_headers = {
+                "Authorization": f"Bearer {access_token.strip()}",
+                "Content-Type": "application/json; charset=UTF-8",
+                "X-Upload-Content-Type": "video/mp4",
+                "X-Upload-Content-Length": str(file_size),
             }
+
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                init_res = await client.post(init_url, headers=init_headers, json=meta_payload)
+                if init_res.status_code != 200:
+                    raise ValueError(f"Lỗi khởi tạo upload YouTube: {init_res.text}")
+
+                upload_url = init_res.headers.get("Location")
+                if not upload_url:
+                    raise ValueError("Không nhận được Upload Location từ YouTube.")
+
+                # Bước 2: Truyền stream video lên máy chủ YouTube
+                with open(p, "rb") as f:
+                    video_data = f.read()
+
+                upload_headers = {
+                    "Content-Type": "video/mp4",
+                    "Content-Length": str(file_size),
+                }
+
+                upload_res = await client.put(upload_url, headers=upload_headers, content=video_data, timeout=600.0)
+                if upload_res.status_code not in [200, 201]:
+                    raise ValueError(f"Lỗi tải video lên YouTube: {upload_res.text}")
+
+                result_data = upload_res.json()
+                vid_id = str(result_data.get("id", ""))
+                shorts_url = f"https://www.youtube.com/shorts/{vid_id}"
+                watch_url = f"https://www.youtube.com/watch?v={vid_id}"
+
+                return {
+                    "video_id": vid_id,
+                    "shorts_url": shorts_url,
+                    "watch_url": watch_url,
+                    "video_url": shorts_url if is_shorts else watch_url,
+                    "video_type": "shorts" if is_shorts else "video",
+                    "title": clean_title,
+                    "status": privacy_status,
+                }
+        finally:
+            if converted_file and converted_file.exists():
+                try:
+                    converted_file.unlink()
+                except Exception:
+                    pass
 
     @staticmethod
     async def get_channel_videos(

@@ -196,7 +196,9 @@ export const QuickPublishPlatformsSection: React.FC<QuickPublishPlatformsSection
                   </button>
                 </div>
                 <p className="text-[10px] text-gray-500 mt-1 italic">
-                  *Video Dài: Tự động chuyển khung hình 16:9 ngang (nền mờ điện ảnh) để YouTube đưa vào mục Video dài, link không bị nhảy sang Shorts.
+                  {ytVideoType === "video"
+                    ? "*Video Dài: Tự động ghép khung 16:9 ngang (nền mờ) để YouTube nhận diện đúng Video dài."
+                    : "*Shorts: Tự động ghép khung 9:16 dọc (nền mờ) nếu video sai tỷ lệ, chống bị đăng thành Video dài."}
                 </p>
               </div>
 

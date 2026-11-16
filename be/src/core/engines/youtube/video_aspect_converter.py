@@ -78,3 +78,53 @@ class VideoAspectConverter:
             logger.error(f"Lỗi khi thực thi FFmpeg chuyển 16:9: {ex}")
 
         return video_path
+
+    @classmethod
+    def ensure_vertical_9_16(cls, video_path: str) -> str:
+        """
+        Nếu video KHÔNG PHẢI là video dọc 9:16 (ví dụ video ngang 16:9, vuông 1:1, hoặc 4:3),
+        chuyển đổi sang khung hình 9:16 (1080x1920) với hiệu ứng nền mờ (Blurred Background).
+        Điều này đảm bảo 100% YouTube nhận diện là Shorts khi người dùng chọn chế độ Shorts,
+        tránh việc bị YouTube phân loại thành Video dài (Regular video) do sai tỷ lệ khung hình.
+        """
+        p = Path(video_path)
+        if not p.exists():
+            return video_path
+
+        info = cls.get_video_dimensions(video_path)
+        w, h = info["width"], info["height"]
+
+        # Tỷ lệ 9:16 chuẩn là 9 / 16 = 0.5625
+        # Nếu đã là video dọc chuẩn (w/h nằm trong khoảng 0.50 đến 0.62), giữ nguyên
+        if w > 0 and h > 0:
+            ratio = w / h
+            if 0.50 <= ratio <= 0.62:
+                logger.info(f"Video {p.name} đã là video dọc chuẩn 9:16 ({w}x{h}, ratio={ratio:.3f}). Không cần chuyển đổi.")
+                return video_path
+
+        temp_dir = settings.TEMP_DIR / "youtube_converted"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        output_path = temp_dir / f"v916_{p.stem}.mp4"
+
+        logger.info(f"Đang chuyển đổi video {p.name} ({w}x{h}) sang 9:16 dọc chuẩn YouTube Shorts (1080x1920)...")
+        cmd = [
+            "ffmpeg", "-y", "-i", str(p),
+            "-filter_complex",
+            "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:25[bg];"
+            "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2[fg];"
+            "[bg][fg]overlay=(W-w)/2:(H-h)/2[v]",
+            "-map", "[v]", "-map", "0:a?",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-c:a", "copy",
+            str(output_path),
+        ]
+
+        try:
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+            if res.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
+                logger.info(f"Chuyển đổi 9:16 Shorts thành công: {output_path.name}")
+                return str(output_path)
+            logger.warning(f"FFmpeg chuyển 9:16 thất bại: {res.stderr[:300]}. Sử dụng file gốc.")
+        except Exception as ex:
+            logger.error(f"Lỗi khi thực thi FFmpeg chuyển 9:16: {ex}")
+
+        return video_path
