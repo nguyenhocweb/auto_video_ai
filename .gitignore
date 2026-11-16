@@ -58,6 +58,8 @@ temp_*
 test_*
 
 # 5. IDE & Operating System
+bin/
+*.exe
 .vscode/
 .idea/
 *.swp
