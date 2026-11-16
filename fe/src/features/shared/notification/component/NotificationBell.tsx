@@ -93,8 +93,13 @@ export const NotificationBell: React.FC = () => {
 
       {/* Menu Dropdown Thông Báo */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 sm:w-[420px] bg-white rounded-2xl shadow-2xl border border-gray-200/90 z-50 overflow-hidden flex flex-col max-h-[85vh]">
-          {/* Header */}
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-xs sm:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="fixed inset-x-3 top-[68px] sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 w-auto sm:w-[420px] max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-gray-200/90 z-50 overflow-hidden flex flex-col max-h-[80vh]">
+            {/* Header */}
           <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-gray-900">Thông Báo</span>
@@ -277,7 +282,8 @@ export const NotificationBell: React.FC = () => {
             )}
           </div>
         </div>
-      )}
+      </>
+    )}
     </div>
   );
 };

@@ -57,13 +57,13 @@ export const YouTubeStudioView: React.FC = () => {
       <div className="space-y-6 max-w-7xl mx-auto pb-12">
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-red-600 text-white flex items-center justify-center text-xl shadow-md shadow-red-500/20">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <div className="w-10 h-10 rounded-2xl bg-red-600 text-white flex items-center justify-center text-xl shadow-md shadow-red-500/20 shrink-0 mt-0.5">
               <FaYoutube />
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
                   YouTube Channel &amp; Shorts Studio
                 </h1>
                 {channels.length > 0 ? (

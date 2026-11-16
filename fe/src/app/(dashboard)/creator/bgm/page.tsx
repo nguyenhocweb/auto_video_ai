@@ -86,11 +86,11 @@ export default function BgmStudioPage() {
 
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/80 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white rounded-xl shadow-xs shrink-0">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <div className="p-3 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white rounded-xl shadow-xs shrink-0 mt-0.5">
               <FaHeadphones className="text-xl" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <h1 className="text-base sm:text-xl font-bold text-gray-900 tracking-tight">
                 Kho Nhạc Nền (BGM Library) &amp; Nghe Thử Trực Tuyến
               </h1>

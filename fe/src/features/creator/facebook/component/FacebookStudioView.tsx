@@ -87,17 +87,17 @@ export const FacebookStudioView: React.FC = () => {
       <div className="space-y-6 max-w-7xl mx-auto pb-12">
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-md shadow-blue-500/20">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-md shadow-blue-500/20 shrink-0 mt-0.5">
               <FaFacebook />
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
                   Facebook Fanpage &amp; Reels Studio
                 </h1>
                 {tokenStatus?.is_valid ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

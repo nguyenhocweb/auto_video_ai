@@ -42,11 +42,11 @@ export const GeminiSettingsView: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Page Header */}
         <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+          <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0 mt-0.5">
               <FaSlidersH className="text-lg sm:text-xl" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight">Cấu hình Translation AI &amp; Key Pools</h1>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">

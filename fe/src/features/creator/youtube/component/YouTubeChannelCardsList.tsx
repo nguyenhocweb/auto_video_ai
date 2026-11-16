@@ -54,12 +54,12 @@ export const YouTubeChannelCardsList: React.FC<YouTubeChannelCardsListProps> = (
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4">
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-lg shadow-xs">
+          <div className="flex items-start gap-2.5 min-w-0 flex-1">
+            <div className="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-lg shadow-xs shrink-0 mt-0.5">
               <FaYoutube />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-base font-bold text-gray-900">
                   Danh sách Kênh YouTube Shorts ({channels.length})
                 </h2>
