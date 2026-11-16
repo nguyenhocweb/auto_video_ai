@@ -9,6 +9,10 @@
 *.env
 be/.env
 fe/.env.local
+TAI_KHOAN.md
+tai_khoan.md
+ACCOUNTS.md
+accounts.md
 
 # 2. Python & Virtual Environments
 __pycache__/
