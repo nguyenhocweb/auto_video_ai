@@ -164,3 +164,15 @@ Khi thiết kế, tạo mới màn hình, thẩm định (critique), làm đẹp
    - Mọi hàm format native `Date` **BẮT BUỘC** chỉ định rõ thuộc tính `{ timeZone: "Asia/Ho_Chi_Minh" }`.
    - Tự động chuẩn hóa chuỗi ISO đầu vào: Nếu chuỗi chưa có offset hoặc `Z`, tự động coi là UTC (`+ "Z"`) trước khi parse để đảm bảo `new Date(...)` bù đúng $+7$ tiếng sang giờ Việt Nam.
 
+---
+
+## 📌 9. Quy chuẩn Thẩm định Kỹ thuật Chuẩn Senior Tech Lead (Reality-Check Audit)
+
+Khi thiết kế giải pháp kỹ thuật, phân tích tính khả thi, lựa chọn tech stack hoặc tối ưu hiệu năng đồ họa / render video trong dự án:
+👉 [senior-techlead-audit](file:///d:/DuAnCaNhan/video_ai/.agents/skills/senior-techlead-audit/SKILL.md)
+
+### Nguyên tắc thẩm định cốt lõi:
+1. **Triệt tiêu bẫy Over-engineering:** Tuyệt đối không tự viết C/C++ thuần từ đầu khi đã có các giải pháp pipeline GPU lai (Hybrid FFmpeg/NVENC/GLSL) nhanh hơn gấp nhiều lần với chi phí bảo trì thấp hơn.
+2. **Khung thẩm định 10 trục chi tiết:** Bắt buộc đối chiếu qua 10 trục: Phần cứng thực tế, Tính thực dụng kiến trúc, Tối ưu thuật toán, Quản lý bộ nhớ VRAM, Đồng bộ nhịp Beat, Độ trung thực đồ họa, Tách biệt Spec JSON, Chịu lỗi, Tốc độ ra mắt và Giám sát vận hành.
+3. **Thang điểm 10 chuẩn hóa & Chỉ rõ thiếu sót:** Luôn đánh giá khách quan, trung thực, chỉ rõ điểm nghẽn và thiếu sót chí mạng kèm giải pháp khắc phục cụ thể trước khi triển khai thực tế.
+
