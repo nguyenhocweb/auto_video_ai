@@ -69,10 +69,18 @@ export const useNotificationSocket = () => {
     if (!activeToken) return;
 
     try {
-      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-      const wsProtocol = isHttps ? "wss:" : "ws:";
-      const host = process.env.NEXT_PUBLIC_WS_HOST || "127.0.0.1:8001";
-      const wsUrl = `${wsProtocol}//${host}/api/v1/ws/notifications?token=${encodeURIComponent(activeToken)}`;
+      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001").trim().replace(/\/+$/, "");
+      let wsBase = apiUrl;
+      if (wsBase.startsWith("https://")) {
+        wsBase = wsBase.replace(/^https:\/\//i, "wss://");
+      } else if (wsBase.startsWith("http://")) {
+        wsBase = wsBase.replace(/^http:\/\//i, "ws://");
+      } else if (!wsBase.startsWith("ws://") && !wsBase.startsWith("wss://")) {
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        wsBase = `${isHttps ? "wss:" : "ws:"}//${wsBase}`;
+      }
+      wsBase = wsBase.replace(/\/api\/v1\/?$/i, "");
+      const wsUrl = `${wsBase}/api/v1/ws/notifications?token=${encodeURIComponent(activeToken)}`;
 
       const ws = new WebSocket(wsUrl);
       socketRef.current = ws;
