@@ -60,16 +60,16 @@ class VideoAspectConverter:
         cmd = [
             "ffmpeg", "-y", "-i", str(p),
             "-filter_complex",
-            "[0:v]scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,boxblur=25:25[bg];"
+            "[0:v]scale=192:108:force_original_aspect_ratio=increase,crop=192:108,boxblur=5:5,scale=1920:1080:flags=fast_bilinear[bg];"
             "[0:v]scale=-1:1080[fg];"
             "[bg][fg]overlay=(W-w)/2:(H-h)/2[v]",
             "-map", "[v]", "-map", "0:a?",
-            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-c:a", "copy",
+            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "22", "-threads", "0", "-c:a", "copy",
             str(output_path),
         ]
 
         try:
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
             if res.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
                 logger.info(f"Chuyển đổi 16:9 thành công: {output_path.name}")
                 return str(output_path)
@@ -110,16 +110,16 @@ class VideoAspectConverter:
         cmd = [
             "ffmpeg", "-y", "-i", str(p),
             "-filter_complex",
-            "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:25[bg];"
+            "[0:v]scale=108:192:force_original_aspect_ratio=increase,crop=108:192,boxblur=5:5,scale=1080:1920:flags=fast_bilinear[bg];"
             "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2[fg];"
             "[bg][fg]overlay=(W-w)/2:(H-h)/2[v]",
             "-map", "[v]", "-map", "0:a?",
-            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-c:a", "copy",
+            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "22", "-threads", "0", "-c:a", "copy",
             str(output_path),
         ]
 
         try:
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
             if res.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
                 logger.info(f"Chuyển đổi 9:16 Shorts thành công: {output_path.name}")
                 return str(output_path)
