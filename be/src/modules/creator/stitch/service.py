@@ -63,8 +63,10 @@ class StitchService:
         bgm_path = None
         if req.audio_mode == "bgm_override" and req.bgm_id:
             track = await self.bgm_service.get_bgm_by_id(req.bgm_id)
-            if track and track.get("file_path") and os.path.exists(track["file_path"]):
-                bgm_path = track["file_path"]
+            if track:
+                file_path = track.get("file_path")
+                if file_path and isinstance(file_path, str) and os.path.exists(file_path):
+                    bgm_path = file_path
 
         try:
             # 1. Cắt đoạn Hook chuẩn hóa theo aspect_ratio (9:16 hoặc 16:9)

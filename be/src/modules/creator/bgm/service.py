@@ -177,6 +177,10 @@ class BgmService:
 
         return random.choice(tracks)
 
+    async def get_bgm_by_id(self, track_id: str) -> Optional[Dict[str, Any]]:
+        """Lấy thông tin chi tiết một bản nhạc theo track_id."""
+        return await self.repo.get_track_by_id(track_id)
+
     async def delete_track(self, track_id: str, user_id: str) -> bool:
         """Xóa bản nhạc khỏi CSDL và ổ đĩa nếu là file local."""
         track = await self.repo.get_track_by_id(track_id)
