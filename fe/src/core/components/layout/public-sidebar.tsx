@@ -33,77 +33,56 @@ export const PublicSidebar: React.FC = () => {
       label: "AI Voice Studio",
       href: "/creator/voice",
       icon: FaMicrophoneAlt,
-      badge: "OmniVoice",
     },
     {
       label: "AI Kể Chuyện & Phim",
       href: "/creator/storyboard",
       icon: FaFilm,
-      disabled: false,
-      badge: "Storyboard",
     },
     {
       label: "Mẫu Video CapCut",
       href: "/creator/templates",
       icon: FaMagic,
-      disabled: false,
-      badge: "CapCut FX",
     },
     {
       label: "Auto Tải Video",
       href: "/creator/video",
       icon: FaCloudDownloadAlt,
-      disabled: false,
-      badge: "Douyin / TikTok",
     },
     {
       label: "Soi Policy & Viral",
       href: "/creator/inspector",
       icon: FaShieldAlt,
-      disabled: false,
-      badge: "AI Inspector",
     },
     {
       label: "Facebook Reels Studio",
       href: "/creator/facebook",
       icon: FaFacebook,
-      disabled: false,
-      badge: "Pages & Reels",
     },
     {
       label: "YouTube Shorts Studio",
       href: "/creator/youtube",
       icon: FaYoutube,
-      disabled: false,
-      badge: "Channels & Shorts",
     },
     {
       label: "TikTok Studio",
       href: "/creator/tiktok",
       icon: SiTiktok,
-      disabled: false,
-      badge: "Đa Kênh & Video",
     },
     {
       label: "Cấu hình Douyin",
       href: "/creator/douyin",
       icon: SiTiktok,
-      disabled: false,
-      badge: "QR Session",
     },
     {
       label: "Auto Cào & Đăng Bài",
       href: "/creator/automation",
       icon: FaRobot,
-      disabled: false,
-      badge: "Automation",
     },
     {
       label: "Kho Nhạc Nền (BGM)",
       href: "/creator/bgm",
       icon: FaMusic,
-      disabled: false,
-      badge: "No-Copyright",
     },
     {
       label: "Kho File & Audio",
@@ -115,8 +94,6 @@ export const PublicSidebar: React.FC = () => {
       label: "Cấu hình AI & GPU",
       href: "/creator/settings",
       icon: FaSlidersH,
-      disabled: false,
-      badge: "Gemini",
     },
   ];
 
@@ -161,17 +138,10 @@ export const PublicSidebar: React.FC = () => {
                 return (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-gray-400 cursor-not-allowed opacity-60"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-gray-400 cursor-not-allowed opacity-60"
                   >
-                    <div className="flex items-center gap-3">
-                      <Icon className="text-sm" />
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-semibold">
-                        {item.badge}
-                      </span>
-                    )}
+                    <Icon className="text-sm" />
+                    <span>{item.label}</span>
                   </div>
                 );
               }
@@ -180,21 +150,14 @@ export const PublicSidebar: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
                       ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-500/10"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`text-base ${isActive ? "text-blue-600" : "text-gray-400"}`} />
-                    <span>{item.label}</span>
-                  </div>
-                  {item.badge && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100/80 text-blue-700 font-bold">
-                      {item.badge}
-                    </span>
-                  )}
+                  <Icon className={`text-base ${isActive ? "text-blue-600" : "text-gray-400"}`} />
+                  <span>{item.label}</span>
                 </Link>
               );
             })}

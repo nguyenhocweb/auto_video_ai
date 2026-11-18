@@ -43,17 +43,18 @@ export const MobileNav: React.FC = () => {
   }, [pathname]);
 
   const creatorItems = [
-    { label: "AI Voice Studio", href: "/creator/voice", icon: FaMicrophoneAlt, badge: "OmniVoice" },
-    { label: "AI Kể Chuyện & Phim", href: "/creator/storyboard", icon: FaFilm, badge: "Storyboard" },
-    { label: "Mẫu Video CapCut", href: "/creator/templates", icon: FaMagic, badge: "CapCut FX" },
-    { label: "Auto Tải Video", href: "/creator/video", icon: FaCloudDownloadAlt, badge: "Douyin/TikTok" },
-    { label: "Soi Policy & Viral", href: "/creator/inspector", icon: FaShieldAlt, badge: "Inspector" },
-    { label: "Facebook Reels", href: "/creator/facebook", icon: FaFacebook, badge: "Pages & Reels" },
-    { label: "YouTube Shorts", href: "/creator/youtube", icon: FaYoutube, badge: "Channels & Shorts" },
-    { label: "Cấu hình Douyin", href: "/creator/douyin", icon: SiTiktok, badge: "QR Session" },
-    { label: "Auto Cào & Đăng", href: "/creator/automation", icon: FaRobot, badge: "Automation" },
-    { label: "Kho Nhạc Nền", href: "/creator/bgm", icon: FaMusic, badge: "BGM" },
-    { label: "Cấu hình AI & GPU", href: "/creator/settings", icon: FaSlidersH, badge: "Settings" },
+    { label: "AI Voice Studio", href: "/creator/voice", icon: FaMicrophoneAlt },
+    { label: "AI Kể Chuyện & Phim", href: "/creator/storyboard", icon: FaFilm },
+    { label: "Mẫu Video CapCut", href: "/creator/templates", icon: FaMagic },
+    { label: "Auto Tải Video", href: "/creator/video", icon: FaCloudDownloadAlt },
+    { label: "Soi Policy & Viral", href: "/creator/inspector", icon: FaShieldAlt },
+    { label: "Facebook Reels", href: "/creator/facebook", icon: FaFacebook },
+    { label: "YouTube Shorts", href: "/creator/youtube", icon: FaYoutube },
+    { label: "TikTok Studio", href: "/creator/tiktok", icon: SiTiktok },
+    { label: "Cấu hình Douyin", href: "/creator/douyin", icon: SiTiktok },
+    { label: "Auto Cào & Đăng", href: "/creator/automation", icon: FaRobot },
+    { label: "Kho Nhạc Nền", href: "/creator/bgm", icon: FaMusic },
+    { label: "Cấu hình AI & GPU", href: "/creator/settings", icon: FaSlidersH },
   ];
 
   const adminItems = [
