@@ -10,7 +10,6 @@ from src.core.utils.date_utils import get_vn_now
 from src.core.engines.stitch.video_stitcher import VideoStitcher
 from src.core.engines.douyin.extractor import DouyinExtractor
 from src.modules.creator.automation.hook_pool_repo import HookPoolMongoRepository
-from src.modules.creator.automation.executor import AutomationExecutor
 from src.modules.creator.automation.executor_helpers import ExecutorHelpers
 
 logger = logging.getLogger("dual_source_worker")
@@ -20,7 +19,13 @@ class DualSourceWorker:
     """Worker chuyên trách thu hoạch Kênh Hook (Nguồn 1) và ghép nối vào Kênh Body (Nguồn 2)."""
 
     def __init__(self, hook_repo: Optional[HookPoolMongoRepository] = None):
-        self.hook_repo = hook_repo or HookPoolMongoRepository()
+        self._hook_repo = hook_repo
+
+    @property
+    def hook_repo(self) -> HookPoolMongoRepository:
+        if self._hook_repo is None:
+            self._hook_repo = HookPoolMongoRepository()
+        return self._hook_repo
 
     async def harvest_hook_channel(self, campaign: Dict[str, Any]) -> int:
         """Quét Kênh Hook (hỗ trợ nhiều kênh), tải video mới nhất, cắt đoạn đầu và nạp vào kho đệm."""
@@ -38,7 +43,7 @@ class DualSourceWorker:
         if not hook_channels:
             return 0
 
-        campaign_id = str(campaign["id"])
+        campaign_id = str(campaign.get("id") or campaign.get("_id") or "")
         user_id = str(campaign.get("user_id", "default_user"))
         hook_duration = float(dual_cfg.get("hook_duration_sec") or 3.5)
         total_harvested = 0
@@ -56,6 +61,7 @@ class DualSourceWorker:
 
             logger.info(f"[{campaign.get('name')}] Đang quét Kênh Hook [{ch_name}]...")
             try:
+                from src.modules.creator.automation.executor import AutomationExecutor
                 crawled = await AutomationExecutor.crawl_channel_videos(ch_url, limit=6)
             except Exception as ex:
                 logger.warning(f"Không thể cào Kênh Hook {ch_name}: {ex}")
@@ -155,10 +161,11 @@ class DualSourceWorker:
         if not dual_cfg.get("enabled"):
             return body_video_path
 
-        campaign_id = str(campaign["id"])
+        campaign_id = str(campaign.get("id") or campaign.get("_id") or "")
+        user_id = str(campaign.get("user_id", "default_user"))
         skip_sec = float(dual_cfg.get("body_skip_start_sec") or 3.0)
-        audio_mode = dual_cfg.get("audio_mode") or "sequential"
-        fallback_policy = dual_cfg.get("fallback_policy") or "reuse_oldest"
+        audio_mode = str(dual_cfg.get("audio_mode") or "sequential")
+        fallback_policy = str(dual_cfg.get("fallback_policy") or "reuse_oldest")
 
         hook_doc = await self.hook_repo.get_available_hook(campaign_id)
         if not hook_doc:
@@ -189,16 +196,19 @@ class DualSourceWorker:
             try:
                 from src.modules.creator.bgm.service import BgmService
                 bgm_service = BgmService()
-                selected_ids = campaign.get("selected_bgm_ids") or []
+                raw_bgm_ids = campaign.get("selected_bgm_ids")
+                selected_ids = [str(i) for i in raw_bgm_ids] if isinstance(raw_bgm_ids, list) else []
                 body_dur = VideoStitcher.get_media_duration(str(body_video_path))
                 chosen = await bgm_service.get_random_bgm_for_auto(
                     user_id=user_id,
                     candidate_ids=selected_ids if len(selected_ids) > 0 else None,
                     min_duration=body_dur,
                 )
-                if chosen and chosen.get("file_path") and os.path.exists(chosen["file_path"]):
-                    bgm_file_path = chosen["file_path"]
-                    logger.info(f"Đã chọn ngẫu nhiên bài BGM '{chosen.get('title')}' cho video ghép!")
+                if chosen:
+                    chosen_fp = chosen.get("file_path")
+                    if chosen_fp and os.path.exists(str(chosen_fp)):
+                        bgm_file_path = str(chosen_fp)
+                        logger.info(f"Đã chọn ngẫu nhiên bài BGM '{chosen.get('title')}' cho video ghép!")
             except Exception as ex:
                 logger.warning(f"Không thể random bài BGM cho video ghép: {ex}")
 
@@ -215,7 +225,7 @@ class DualSourceWorker:
                 out_path=stitched_out,
                 audio_mode=audio_mode,
                 bgm_path=bgm_file_path,
-                aspect_ratio=dual_cfg.get("aspect_ratio") or "9:16",
+                aspect_ratio=str(dual_cfg.get("aspect_ratio") or "9:16"),
             )
 
             hook_id = str(hook_doc.get("id") or "")
