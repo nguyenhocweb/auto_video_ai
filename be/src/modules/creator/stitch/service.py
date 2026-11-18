@@ -170,3 +170,40 @@ class StitchService:
 
         res = await self.hook_repo.col.delete_one({"id": hook_id})
         return res.deleted_count > 0
+
+    @staticmethod
+    def get_or_create_test_samples() -> Dict[str, Any]:
+        """Tạo hoặc lấy 2 video mẫu chuẩn 1080x1920 có âm thanh để người dùng bấm test nhanh."""
+        import subprocess
+        sample_dir = settings.TEMP_DIR / "stitch_samples"
+        sample_dir.mkdir(parents=True, exist_ok=True)
+        hook_path = sample_dir / "sample_hook_test.mp4"
+        body_path = sample_dir / "sample_body_test.mp4"
+
+        if not hook_path.exists() or hook_path.stat().st_size == 0:
+            cmd = [
+                "ffmpeg", "-y",
+                "-f", "lavfi", "-i", "testsrc=duration=6:size=1080x1920:rate=30",
+                "-f", "lavfi", "-i", "sine=frequency=800:duration=6",
+                "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac",
+                str(hook_path),
+            ]
+            subprocess.run(cmd, capture_output=True, timeout=15)
+
+        if not body_path.exists() or body_path.stat().st_size == 0:
+            cmd = [
+                "ffmpeg", "-y",
+                "-f", "lavfi", "-i", "testsrc2=duration=12:size=1080x1920:rate=30",
+                "-f", "lavfi", "-i", "sine=frequency=440:duration=12",
+                "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac",
+                str(body_path),
+            ]
+            subprocess.run(cmd, capture_output=True, timeout=15)
+
+        return {
+            "success": True,
+            "hook_sample": str(hook_path),
+            "body_sample": str(body_path),
+            "hook_title": "Video Mẫu 1 (Test Hook 6s)",
+            "body_title": "Video Mẫu 2 (Test Body 12s)",
+        }

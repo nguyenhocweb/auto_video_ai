@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaLink, FaEye } from "react-icons/fa";
+import { FaLink, FaEye, FaCloudUploadAlt } from "react-icons/fa";
 import { SiTiktok } from "react-icons/si";
 import { useGetSavedChannels } from "@/src/features/creator/video/hook/useGetSavedChannels";
 import { crawlChannelTodayService } from "@/src/features/creator/video/service/video.crawl.service";
@@ -9,6 +9,7 @@ import { ChannelVideoItem } from "@/src/features/creator/video/type/video.type";
 import { StitchSavedChannelsList } from "./StitchSavedChannelsList";
 import { StitchScannedVideosGrid } from "./StitchScannedVideosGrid";
 import { StitchDurationSlider } from "./StitchDurationSlider";
+import { StitchFileUploadInput } from "./StitchFileUploadInput";
 import { toast } from "sonner";
 
 interface StitchChannelPickerProps {
@@ -51,7 +52,7 @@ export const StitchChannelPicker: React.FC<StitchChannelPickerProps> = ({
   const { data: savedData, isLoading: isLoadingSaved } = useGetSavedChannels();
   const savedChannels = savedData?.channels || [];
 
-  const [inputMode, setInputMode] = useState<"channel" | "direct">("channel");
+  const [inputMode, setInputMode] = useState<"channel" | "direct" | "upload">("channel");
   const [selectedChannelUrls, setSelectedChannelUrls] = useState<string[]>([]);
   const [customChannelUrl, setCustomChannelUrl] = useState("");
   const [maxAgeHours, setMaxAgeHours] = useState<number>(24);
@@ -158,7 +159,7 @@ export const StitchChannelPicker: React.FC<StitchChannelPickerProps> = ({
         </span>
       </div>
 
-      {/* Tabs chuyển chế độ: Quét từ Kênh vs Dán link trực tiếp */}
+      {/* Tabs chuyển chế độ: Quét từ Kênh vs Dán link trực tiếp vs Tải từ máy */}
       <div className="flex gap-1.5 p-1 bg-gray-100 rounded-lg text-[11px] font-bold">
         <button
           type="button"
@@ -167,7 +168,16 @@ export const StitchChannelPicker: React.FC<StitchChannelPickerProps> = ({
             inputMode === "channel" ? "bg-white text-gray-800 shadow-xs" : "text-gray-500 hover:text-gray-700"
           }`}
         >
-          <SiTiktok className="text-[10px]" /> Quét Từ Danh Sách Kênh
+          <SiTiktok className="text-[10px]" /> Quét Kênh
+        </button>
+        <button
+          type="button"
+          onClick={() => setInputMode("upload")}
+          className={`flex-1 py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            inputMode === "upload" ? "bg-white text-gray-800 shadow-xs" : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          <FaCloudUploadAlt className="text-[11px]" /> Tải File Lên
         </button>
         <button
           type="button"
@@ -176,7 +186,7 @@ export const StitchChannelPicker: React.FC<StitchChannelPickerProps> = ({
             inputMode === "direct" ? "bg-white text-gray-800 shadow-xs" : "text-gray-500 hover:text-gray-700"
           }`}
         >
-          <FaLink className="text-[10px]" /> Dán Link Trực Tiếp
+          <FaLink className="text-[10px]" /> Dán Link
         </button>
       </div>
 
@@ -207,8 +217,18 @@ export const StitchChannelPicker: React.FC<StitchChannelPickerProps> = ({
             accentColor={accentColor}
           />
         </div>
+      ) : inputMode === "upload" ? (
+        <StitchFileUploadInput
+          onUploaded={(path, title) => {
+            onSelectUrl(path);
+            setSelectedVideoTitle(title || "Video tải từ máy");
+          }}
+          selectedUrl={selectedUrl}
+          accentColor={accentColor}
+          disabled={disabled}
+        />
       ) : (
-        /* Chế độ 2: Dán Link Trực Tiếp */
+        /* Chế độ 3: Dán Link Trực Tiếp */
         <div>
           <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1.5">
             <FaLink className="text-gray-400" /> Link Video Douyin / TikTok hoặc Đường Dẫn File

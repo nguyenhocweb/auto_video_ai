@@ -30,4 +30,38 @@ export const stitchService = {
     );
     return res.data;
   },
+
+  async uploadMedia(
+    file: File
+  ): Promise<{ success: boolean; file_path: string; filename: string; duration: number; size_mb: number }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await axiosClient.post<{
+      success: boolean;
+      file_path: string;
+      filename: string;
+      duration: number;
+      size_mb: number;
+    }>("/api/v1/creator/stitch/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data;
+  },
+
+  async getTestSamples(): Promise<{
+    success: boolean;
+    hook_sample: string;
+    body_sample: string;
+    hook_title: string;
+    body_title: string;
+  }> {
+    const res = await axiosClient.get<{
+      success: boolean;
+      hook_sample: string;
+      body_sample: string;
+      hook_title: string;
+      body_title: string;
+    }>("/api/v1/creator/stitch/samples");
+    return res.data;
+  },
 };

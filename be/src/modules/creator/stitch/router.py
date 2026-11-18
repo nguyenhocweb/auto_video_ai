@@ -1,10 +1,12 @@
 import os
+import uuid
 import logging
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File
 from fastapi.responses import FileResponse
 
 from src.core.config import settings
+from src.core.engines.stitch.video_stitcher import VideoStitcher
 from src.modules.shared.auth.dependencies import get_current_user
 from src.modules.creator.stitch.schemas import (
     ManualStitchRequest,
@@ -82,3 +84,46 @@ async def stream_stitched_video(filename: str):
         media_type="video/mp4",
         filename=clean_name,
     )
+
+
+@router.post("/upload")
+async def upload_stitch_media(
+    file: UploadFile = File(..., description="File video MP4/MOV để ghép nối"),
+    current_user=Depends(get_current_user),
+):
+    """Tải lên video trực tiếp từ máy tính để test hoặc ghép nối."""
+    try:
+        temp_dir = settings.TEMP_DIR / "stitch_uploads"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"upload_{uuid.uuid4().hex[:8]}_{file.filename}"
+        file_path = str(temp_dir / filename)
+
+        content = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(content)
+
+        dur = VideoStitcher.get_media_duration(file_path)
+        size_mb = round(os.path.getsize(file_path) / (1024 * 1024), 2)
+
+        return {
+            "success": True,
+            "file_path": file_path,
+            "filename": file.filename,
+            "duration": round(dur, 2),
+            "size_mb": size_mb,
+        }
+    except Exception as ex:
+        logger.error(f"Lỗi upload file stitch: {ex}")
+        raise HTTPException(status_code=400, detail=str(ex))
+
+
+@router.get("/samples")
+async def get_test_samples(
+    current_user=Depends(get_current_user),
+):
+    """Lấy 2 video mẫu chuẩn để người dùng bấm test nhanh 1-Click."""
+    try:
+        return StitchService.get_or_create_test_samples()
+    except Exception as ex:
+        logger.error(f"Lỗi tạo video mẫu: {ex}")
+        raise HTTPException(status_code=500, detail=str(ex))
