@@ -23,6 +23,7 @@ interface ProcessingModeSelectorProps {
   onChangeKeepOriginalAudio?: (keep: boolean) => void;
   audioMode?: "sequential" | "body_audio" | "hook_audio" | "bgm_override";
   onChangeAudioMode?: (mode: "sequential" | "body_audio" | "hook_audio" | "bgm_override") => void;
+  isDualSource?: boolean;
 }
 
 export const ProcessingModeSelector: React.FC<ProcessingModeSelectorProps> = ({
@@ -38,9 +39,26 @@ export const ProcessingModeSelector: React.FC<ProcessingModeSelectorProps> = ({
   onChangeKeepOriginalAudio,
   audioMode,
   onChangeAudioMode,
+  isDualSource = false,
 }) => {
   const { data: profilesData } = useGetVoiceProfiles();
   const profiles = profilesData?.profiles || [];
+
+  // Khi đang ở chế độ Ghép 2 Nguồn: Tự động chạy chế độ tải gốc sạch logo và chỉ cấu hình âm thanh
+  if (isDualSource) {
+    return (
+      <div className="space-y-2">
+        <ReupBgmConfigSection
+          selectedBgmIds={selectedBgmIds}
+          onChangeSelectedBgmIds={onChangeSelectedBgmIds}
+          keepOriginalAudio={keepOriginalAudio}
+          onChangeKeepOriginalAudio={onChangeKeepOriginalAudio}
+          audioMode={audioMode}
+          onChangeAudioMode={onChangeAudioMode}
+        />
+      </div>
+    );
+  }
 
   // Xác định giá trị hiện tại của select
   const currentValue =

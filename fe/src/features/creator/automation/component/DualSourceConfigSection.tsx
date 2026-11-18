@@ -160,55 +160,36 @@ export const DualSourceConfigSection: React.FC<DualSourceConfigSectionProps> = (
             </div>
           </div>
 
-          {/* Tỷ lệ khung hình & Âm thanh */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                Tỷ lệ khung hình xuất bản:
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => updateConfig({ aspect_ratio: "9:16" })}
-                  className={`flex-1 py-1.5 px-2 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                    config.aspect_ratio === "9:16"
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  <FaMobileAlt /> 9:16 (Dọc)
-                </button>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => updateConfig({ aspect_ratio: "16:9" })}
-                  className={`flex-1 py-1.5 px-2 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                    config.aspect_ratio === "16:9"
-                      ? "bg-purple-600 text-white border-purple-600"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  <FaTv /> 16:9 (Ngang)
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                Chế độ phối âm thanh:
-              </label>
-              <select
-                value={config.audio_mode}
+          {/* Tỷ lệ khung hình xuất bản */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 mb-1">
+              Tỷ lệ khung hình xuất bản:
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
                 disabled={disabled}
-                onChange={(e) => updateConfig({ audio_mode: e.target.value as any })}
-                className="w-full px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold outline-none"
+                onClick={() => updateConfig({ aspect_ratio: "9:16" })}
+                className={`flex-1 py-1.5 px-2 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  config.aspect_ratio === "9:16"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                }`}
               >
-                <option value="sequential">Nối tuần tự (Hook audio → Body audio)</option>
-                <option value="body_audio">Dùng 100% âm thanh video chính</option>
-                <option value="hook_audio">Lặp âm thanh Hook xuyên suốt</option>
-                <option value="bgm_override">Đè nhạc nền BGM Studio</option>
-              </select>
+                <FaMobileAlt /> 9:16 (Dọc - Auto lót nền mờ nếu 16:9)
+              </button>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => updateConfig({ aspect_ratio: "16:9" })}
+                className={`flex-1 py-1.5 px-2 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  config.aspect_ratio === "16:9"
+                    ? "bg-purple-600 text-white border-purple-600"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                <FaTv /> 16:9 (Ngang - Auto lót nền mờ nếu 9:16)
+              </button>
             </div>
           </div>
 

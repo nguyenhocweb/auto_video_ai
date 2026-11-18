@@ -157,7 +157,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       only_today: maxVideoAgeHours > 0 && maxVideoAgeHours <= 24,
       max_video_age_hours: Number(maxVideoAgeHours),
       only_new_unprocessed: onlyNew,
-      processing_mode: mode,
+      processing_mode: dualSource?.enabled ? "download_only" : mode,
       voice_source: voiceSource,
       voice_preset: voicePreset,
       voice_profile_id: voiceProfileId,
@@ -233,6 +233,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
           <ProcessingModeSelector
             mode={mode}
             onChangeMode={setMode}
+            isDualSource={Boolean(dualSource?.enabled)}
             voiceSource={voiceSource}
             voicePreset={voicePreset}
             voiceProfileId={voiceProfileId}
