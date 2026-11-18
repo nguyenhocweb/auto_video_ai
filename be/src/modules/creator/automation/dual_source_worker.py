@@ -86,6 +86,7 @@ class DualSourceWorker:
                     raw_video_path=str(raw_tmp_path),
                     duration=hook_duration,
                     out_path=str(clipped_hook_path),
+                    aspect_ratio=dual_cfg.get("aspect_ratio") or "9:16",
                 )
 
                 await self.hook_repo.save_hook({
@@ -168,6 +169,7 @@ class DualSourceWorker:
                 out_path=stitched_out,
                 audio_mode=audio_mode,
                 bgm_path=bgm_file_path,
+                aspect_ratio=dual_cfg.get("aspect_ratio") or "9:16",
             )
 
             hook_id = str(hook_doc.get("id") or "")

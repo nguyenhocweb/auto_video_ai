@@ -6,6 +6,7 @@ export interface ManualStitchPayload {
   body_source: string;
   body_skip_start: number;
   audio_mode: AudioMode;
+  aspect_ratio?: "9:16" | "16:9";
   bgm_id?: string | null;
 }
 
@@ -18,6 +19,7 @@ export interface ManualStitchResult {
   hook_duration: number;
   body_skip_sec: number;
   audio_mode: AudioMode;
+  aspect_ratio: "9:16" | "16:9";
   message: string;
 }
 

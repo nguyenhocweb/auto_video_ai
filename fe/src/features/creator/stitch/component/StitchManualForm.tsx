@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaPlay, FaSpinner, FaLink, FaCut, FaClock, FaMagic } from "react-icons/fa";
+import {
+  FaPlay,
+  FaSpinner,
+  FaLink,
+  FaCut,
+  FaClock,
+  FaMagic,
+  FaMobileAlt,
+  FaTv,
+  FaRandom,
+} from "react-icons/fa";
 import { StitchAudioSelector } from "./StitchAudioSelector";
 import { AudioMode, ManualStitchPayload } from "../type/stitch.type";
 
@@ -19,6 +29,7 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
   const [bodySource, setBodySource] = useState("");
   const [bodySkipStart, setBodySkipStart] = useState<number>(3.0);
   const [audioMode, setAudioMode] = useState<AudioMode>("sequential");
+  const [aspectRatio, setAspectRatio] = useState<"9:16" | "16:9">("9:16");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +47,7 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
       body_source: bodySource.trim(),
       body_skip_start: Number(bodySkipStart),
       audio_mode: audioMode,
+      aspect_ratio: aspectRatio,
     });
   };
 
@@ -43,24 +55,86 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm">
       {/* Visual Timeline preview */}
       <div className="p-4 bg-gradient-to-r from-blue-50/60 via-purple-50/40 to-pink-50/40 rounded-xl border border-blue-100">
-        <div className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
-          <FaMagic className="text-blue-600" /> Mô Phỏng Cấu Trúc Video Sau Khi Ghép:
+        <div className="text-xs font-bold text-gray-700 mb-2 flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <FaMagic className="text-blue-600" /> Mô Phỏng Cấu Trúc Video Sau Khi Ghép:
+          </span>
+          <span className="text-[11px] font-black px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">
+            Chuyển cảnh xfade (Mờ dần 0.45s)
+          </span>
         </div>
         <div className="flex h-10 rounded-lg overflow-hidden border border-gray-300 font-bold text-xs text-white">
           <div
             style={{ width: `${Math.min(35, Math.max(15, hookDuration * 6))}%` }}
             className="bg-blue-600 flex items-center justify-center gap-1.5 px-2 truncate transition-all shadow-inner"
           >
-            <FaCut className="text-[10px]" /> [Nguồn 1] 0s → {hookDuration}s (Hook Giữ Chân)
+            <FaCut className="text-[10px]" /> [Nguồn 1] 0s → {hookDuration}s
+          </div>
+          <div className="w-5 bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shrink-0">
+            <FaRandom className="text-[9px] animate-pulse" />
           </div>
           <div className="flex-1 bg-purple-600 flex items-center justify-center gap-1.5 px-2 truncate transition-all shadow-inner">
-            <FaPlay className="text-[10px]" /> [Nguồn 2] Cắt bỏ {bodySkipStart}s đầu → Đến Hết Video (Thân Bài)
+            <FaPlay className="text-[10px]" /> [Nguồn 2] Bỏ {bodySkipStart}s đầu → Đến Hết Video
           </div>
         </div>
         <div className="flex justify-between text-[11px] text-gray-500 mt-1.5 px-0.5">
           <span>Khởi đầu (0s)</span>
-          <span className="text-blue-600 font-bold">Chuyển cảnh ({hookDuration}s)</span>
+          <span className="text-indigo-600 font-bold">Chuyển cảnh mượt xfade ({hookDuration}s)</span>
           <span>Kết thúc</span>
+        </div>
+      </div>
+
+      {/* Bộ chọn Tỷ Lệ Khung Hình */}
+      <div className="space-y-2">
+        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+          Tỷ Lệ Khung Hình Video (Aspect Ratio)
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => setAspectRatio("9:16")}
+            className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
+              aspectRatio === "9:16"
+                ? "border-blue-500 bg-blue-50/70 ring-2 ring-blue-500/20 text-blue-950 shadow-sm"
+                : "border-gray-200 bg-white hover:border-gray-300 text-gray-700"
+            }`}
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm ${
+              aspectRatio === "9:16" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"
+            }`}>
+              <FaMobileAlt />
+            </div>
+            <div>
+              <div className="text-xs font-bold">9:16 (Video Dọc 1080x1920)</div>
+              <div className="text-[11px] text-gray-500 mt-0.5">
+                Chuẩn Shorts, TikTok, Facebook Reels. Scale pad tự động giữ nét.
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => setAspectRatio("16:9")}
+            className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
+              aspectRatio === "16:9"
+                ? "border-purple-500 bg-purple-50/70 ring-2 ring-purple-500/20 text-purple-950 shadow-sm"
+                : "border-gray-200 bg-white hover:border-gray-300 text-gray-700"
+            }`}
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm ${
+              aspectRatio === "16:9" ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-600"
+            }`}>
+              <FaTv />
+            </div>
+            <div>
+              <div className="text-xs font-bold">16:9 (Video Ngang 1920x1080)</div>
+              <div className="text-[11px] text-gray-500 mt-0.5">
+                Chuẩn YouTube Video dài, Facebook Feed. Tự động căn giữa khung hình.
+              </div>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -179,12 +253,12 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
           {isPending ? (
             <>
               <FaSpinner className="animate-spin text-sm" />
-              <span>Đang Tải &amp; Ghép Nối Video (FFmpeg 1-Pass)...</span>
+              <span>Đang Render Chuyển Cảnh xfade ({aspectRatio})...</span>
             </>
           ) : (
             <>
               <FaMagic className="text-sm" />
-              <span>Bắt Đầu Ghép Nối Video Ngay</span>
+              <span>Bắt Đầu Ghép Nối Video ({aspectRatio})</span>
             </>
           )}
         </button>

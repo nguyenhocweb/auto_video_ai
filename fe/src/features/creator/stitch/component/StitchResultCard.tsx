@@ -10,6 +10,9 @@ import {
   FaClock,
   FaFilm,
   FaLayerGroup,
+  FaTv,
+  FaMobileAlt,
+  FaRandom,
 } from "react-icons/fa";
 import { SiTiktok } from "react-icons/si";
 import { ManualStitchResult } from "../type/stitch.type";
@@ -20,6 +23,7 @@ interface StitchResultCardProps {
 
 export const StitchResultCard: React.FC<StitchResultCardProps> = ({ result }) => {
   const streamUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}${result.preview_url}`;
+  const isLandscape = result.aspect_ratio === "16:9";
 
   return (
     <div className="bg-white p-6 rounded-2xl border border-green-200 shadow-md space-y-6">
@@ -29,11 +33,16 @@ export const StitchResultCard: React.FC<StitchResultCardProps> = ({ result }) =>
             <FaCheckCircle />
           </div>
           <div>
-            <h3 className="text-sm font-black text-gray-900 tracking-tight">
-              Ghép Nối Video Thành Công!
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-black text-gray-900 tracking-tight">
+                Ghép Nối Video Thành Công!
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-green-100 text-green-800 rounded-full flex items-center gap-1">
+                <FaRandom className="text-[9px]" /> Chuyển cảnh xfade mượt mà
+              </span>
+            </div>
             <p className="text-xs text-gray-500 mt-0.5">
-              File MP4 chuẩn 1080x1920 (9:16) đã sẵn sàng để xuất bản
+              File MP4 chuẩn {isLandscape ? "16:9 (1920x1080)" : "9:16 (1080x1920)"} đã sẵn sàng xuất bản
             </p>
           </div>
         </div>
@@ -48,9 +57,13 @@ export const StitchResultCard: React.FC<StitchResultCardProps> = ({ result }) =>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-        {/* Video Player */}
+        {/* Video Player (Co dãn theo 9:16 hoặc 16:9) */}
         <div className="md:col-span-5 flex justify-center bg-black/5 p-3 rounded-2xl">
-          <div className="w-full max-w-[240px] aspect-[9/16] rounded-xl overflow-hidden bg-black shadow-lg relative">
+          <div
+            className={`w-full ${
+              isLandscape ? "max-w-[400px] aspect-video" : "max-w-[240px] aspect-[9/16]"
+            } rounded-xl overflow-hidden bg-black shadow-lg relative transition-all`}
+          >
             <video
               src={streamUrl}
               controls
@@ -71,6 +84,14 @@ export const StitchResultCard: React.FC<StitchResultCardProps> = ({ result }) =>
             </div>
             <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
               <span className="text-[11px] font-bold text-gray-400 block mb-1 flex items-center gap-1">
+                {isLandscape ? <FaTv className="text-purple-600" /> : <FaMobileAlt className="text-blue-600" />} Khung Hình
+              </span>
+              <span className="text-base font-black text-gray-900">
+                {result.aspect_ratio || "9:16"} {isLandscape ? "(Ngang)" : "(Dọc)"}
+              </span>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+              <span className="text-[11px] font-bold text-gray-400 block mb-1 flex items-center gap-1">
                 <FaFilm /> Đoạn Hook Đầu
               </span>
               <span className="text-base font-black text-blue-600">0s → {result.hook_duration}s</span>
@@ -81,14 +102,13 @@ export const StitchResultCard: React.FC<StitchResultCardProps> = ({ result }) =>
               </span>
               <span className="text-base font-black text-purple-600">{result.body_skip_sec}s đầu</span>
             </div>
-            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-              <span className="text-[11px] font-bold text-gray-400 block mb-1">
-                Chế Độ Âm Thanh
-              </span>
-              <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md uppercase">
-                {result.audio_mode}
-              </span>
-            </div>
+          </div>
+
+          <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 flex items-center justify-between text-xs">
+            <span className="font-bold text-gray-700">Chế độ hòa âm:</span>
+            <span className="font-black text-blue-700 uppercase bg-blue-100 px-2 py-0.5 rounded-md text-[11px]">
+              {result.audio_mode}
+            </span>
           </div>
 
           <div className="pt-2 border-t border-gray-100">

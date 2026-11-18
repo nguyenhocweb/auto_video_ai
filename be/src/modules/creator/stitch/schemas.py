@@ -8,6 +8,7 @@ class ManualStitchRequest(BaseModel):
     body_source: str = Field(..., min_length=2, description="Link Douyin/TikTok hoặc file cục bộ cho Nguồn 2 (Body)")
     body_skip_start: float = Field(default=3.0, ge=0.0, le=60.0, description="Số giây cắt bỏ ở đầu Nguồn 2")
     audio_mode: str = Field(default="sequential", description="Chế độ âm thanh: sequential | body_audio | hook_audio | bgm_override")
+    aspect_ratio: str = Field(default="9:16", description="Tỷ lệ khung hình: '9:16' (Dọc) hoặc '16:9' (Ngang)")
     bgm_id: Optional[str] = Field(None, description="ID bài nhạc nền nếu chọn bgm_override")
 
 
@@ -20,6 +21,7 @@ class ManualStitchResponse(BaseModel):
     hook_duration: float
     body_skip_sec: float
     audio_mode: str
+    aspect_ratio: str = "9:16"
     message: str
 
 

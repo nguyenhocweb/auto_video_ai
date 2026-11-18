@@ -67,17 +67,18 @@ class StitchService:
                 bgm_path = track["file_path"]
 
         try:
-            # 1. Cắt đoạn Hook chuẩn hóa 1080x1920
-            logger.info(f"Cắt Hook ({req.hook_duration}s)...")
+            # 1. Cắt đoạn Hook chuẩn hóa theo aspect_ratio (9:16 hoặc 16:9)
+            logger.info(f"Cắt Hook ({req.hook_duration}s, {req.aspect_ratio})...")
             await asyncio.to_thread(
                 VideoStitcher.extract_hook_clip,
                 raw_video_path=raw_hook_path,
                 duration=req.hook_duration,
                 out_path=clipped_hook_path,
+                aspect_ratio=req.aspect_ratio,
             )
 
-            # 2. Ghép nối Hook + Body
-            logger.info(f"Tiến hành ghép nối (Bỏ {req.body_skip_start}s đầu của Body)...")
+            # 2. Ghép nối Hook + Body với hiệu ứng mờ dần xfade
+            logger.info(f"Tiến hành ghép nối (Bỏ {req.body_skip_start}s đầu, {req.aspect_ratio})...")
             await asyncio.to_thread(
                 VideoStitcher.stitch_hook_and_body,
                 hook_path=clipped_hook_path,
@@ -86,6 +87,7 @@ class StitchService:
                 out_path=out_stitched_path,
                 audio_mode=req.audio_mode,
                 bgm_path=bgm_path,
+                aspect_ratio=req.aspect_ratio,
             )
 
             final_dur = VideoStitcher.get_media_duration(out_stitched_path)
@@ -100,6 +102,7 @@ class StitchService:
                 hook_duration=req.hook_duration,
                 body_skip_sec=req.body_skip_start,
                 audio_mode=req.audio_mode,
+                aspect_ratio=req.aspect_ratio,
                 message="Ghép nối video 2 nguồn thành công!",
             )
         finally:

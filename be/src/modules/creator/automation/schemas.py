@@ -28,6 +28,7 @@ class DualSourceConfig(BaseModel):
     hook_duration_sec: float = Field(default=3.5, ge=1.0, le=30.0, description="Số giây lấy từ đầu video nguồn 1")
     body_skip_start_sec: float = Field(default=3.0, ge=0.0, le=60.0, description="Số giây bỏ qua ở đầu video nguồn 2")
     audio_mode: str = Field(default="sequential", description="Chế độ âm thanh: sequential | body_audio | hook_audio | bgm_override")
+    aspect_ratio: str = Field(default="9:16", description="Tỷ lệ khung hình: '9:16' (Dọc) hoặc '16:9' (Ngang)")
     fallback_policy: str = Field(default="reuse_oldest", description="Chính sách khi hết Hook mới: reuse_oldest | wait | bypass")
 
 
