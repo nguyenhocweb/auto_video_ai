@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaSpinner, FaPlay, FaVial, FaTrash } from "react-icons/fa";
+import { FaSpinner, FaPlay, FaVial, FaTrash, FaRandom } from "react-icons/fa";
 import { StitchTimelinePreview } from "./StitchTimelinePreview";
 import { StitchAspectRatioSelector } from "./StitchAspectRatioSelector";
 import { StitchChannelPicker } from "./StitchChannelPicker";
@@ -25,6 +25,7 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
   const [bodySkipStart, setBodySkipStart] = useState<number>(3.0);
   const [audioMode, setAudioMode] = useState<AudioMode>("sequential");
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "16:9">("9:16");
+  const [transitionDuration, setTransitionDuration] = useState<number>(1.2);
   const [isLoadingSamples, setIsLoadingSamples] = useState(false);
 
   const handleLoadTestSamples = async () => {
@@ -38,6 +39,7 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
         setBodySkipStart(3.0);
         setAspectRatio("9:16");
         setAudioMode("sequential");
+        setTransitionDuration(1.2);
         toast.success(
           "Đã nạp 2 video mẫu test thành công! Bạn có thể chọn chế độ bên dưới và bấm 'Render Video Coi Thử'."
         );
@@ -72,6 +74,7 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
       body_skip_start: Number(bodySkipStart),
       audio_mode: audioMode,
       aspect_ratio: aspectRatio,
+      transition_duration: Number(transitionDuration),
     });
   };
 
@@ -121,7 +124,49 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
       </div>
 
       {/* Visual Timeline preview */}
-      <StitchTimelinePreview hookDuration={hookDuration} bodySkipStart={bodySkipStart} />
+      <StitchTimelinePreview
+        hookDuration={hookDuration}
+        bodySkipStart={bodySkipStart}
+        transitionDuration={transitionDuration}
+      />
+
+      {/* Cấu hình Tốc độ / Thời lượng Chuyển cảnh xfade */}
+      <div className="bg-gradient-to-r from-indigo-50/70 via-purple-50/40 to-blue-50/70 p-3.5 rounded-xl border border-indigo-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <span className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs shrink-0 shadow-xs">
+            <FaRandom />
+          </span>
+          <div>
+            <div className="text-xs font-bold text-gray-800 flex items-center gap-2">
+              <span>Tốc Độ Chuyển Cảnh (Video 1 Mờ Dần → Video 2 Hiện Lên)</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">
+                {transitionDuration}s ({transitionDuration >= 1.2 ? "Chậm & Mượt" : "Nhanh"})
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-500 mt-0.5">
+              Chuyển cảnh chậm rãi êm dịu giúp video 1 mờ dần từ tốn và video 2 hiện lên nhẹ nhàng, không bị giật
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          {[0.8, 1.2, 1.6, 2.0].map((sec) => (
+            <button
+              key={sec}
+              type="button"
+              disabled={isPending}
+              onClick={() => setTransitionDuration(sec)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                transitionDuration === sec
+                  ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              {sec}s {sec === 1.2 && "(Chuẩn)"}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Bộ chọn Tỷ Lệ Khung Hình */}
       <StitchAspectRatioSelector value={aspectRatio} onChange={setAspectRatio} disabled={isPending} />

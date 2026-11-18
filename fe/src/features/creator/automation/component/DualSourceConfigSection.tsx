@@ -7,6 +7,7 @@ import {
   FaCut,
   FaMobileAlt,
   FaTv,
+  FaRandom,
 } from "react-icons/fa";
 import { DualSourceConfig } from "../type/automation.type";
 import { HookChannelPickerSub } from "./HookChannelPickerSub";
@@ -35,6 +36,7 @@ export const DualSourceConfigSection: React.FC<DualSourceConfigSectionProps> = (
         body_skip_start_sec: 3.0,
         audio_mode: "sequential",
         aspect_ratio: "9:16",
+        transition_duration_sec: 1.2,
         fallback_policy: "reuse_oldest",
       });
     }
@@ -196,6 +198,38 @@ export const DualSourceConfigSection: React.FC<DualSourceConfigSectionProps> = (
                 <option value="bgm_override">Đè nhạc nền BGM Studio</option>
               </select>
             </div>
+          </div>
+
+          {/* Tốc độ chuyển cảnh mờ dần xfade */}
+          <div className="bg-white p-2.5 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center text-xs mb-1.5 font-bold">
+              <span className="flex items-center gap-1.5 text-indigo-700">
+                <FaRandom className="text-[10px]" /> Tốc độ chuyển cảnh xfade (Video 1 mờ dần → Video 2 hiện lên):
+              </span>
+              <span className="text-indigo-600 font-black">
+                {config.transition_duration_sec ?? 1.2}s ({(config.transition_duration_sec ?? 1.2) >= 1.2 ? "Chậm & Mượt" : "Nhanh"})
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {[0.8, 1.2, 1.6, 2.0].map((sec) => (
+                <button
+                  key={sec}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => updateConfig({ transition_duration_sec: sec })}
+                  className={`flex-1 py-1 text-[11px] font-bold rounded border transition-all cursor-pointer ${
+                    (config.transition_duration_sec ?? 1.2) === sec
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                      : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                  }`}
+                >
+                  {sec}s {sec === 1.2 && "(Chuẩn)"}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1">
+              Chuyển cảnh 1.2s giúp đoạn Hook mờ dần từ từ và video chính hiện lên êm dịu, không giật gấp.
+            </p>
           </div>
         </div>
       )}

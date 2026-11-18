@@ -30,6 +30,7 @@ export interface DualSourceConfig {
   body_skip_start_sec: number;
   audio_mode: "sequential" | "body_audio" | "hook_audio" | "bgm_override";
   aspect_ratio: "9:16" | "16:9";
+  transition_duration_sec?: number;
   fallback_policy: "reuse_oldest" | "wait" | "bypass";
 }
 

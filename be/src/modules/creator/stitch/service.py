@@ -80,7 +80,7 @@ class StitchService:
             )
 
             # 2. Ghép nối Hook + Body với hiệu ứng mờ dần xfade
-            logger.info(f"Tiến hành ghép nối (Bỏ {req.body_skip_start}s đầu, {req.aspect_ratio})...")
+            logger.info(f"Tiến hành ghép nối (Bỏ {req.body_skip_start}s đầu, {req.aspect_ratio}, trans={req.transition_duration}s)...")
             await asyncio.to_thread(
                 VideoStitcher.stitch_hook_and_body,
                 hook_path=clipped_hook_path,
@@ -90,6 +90,7 @@ class StitchService:
                 audio_mode=req.audio_mode,
                 bgm_path=bgm_path,
                 aspect_ratio=req.aspect_ratio,
+                transition_duration=req.transition_duration,
             )
 
             final_dur = VideoStitcher.get_media_duration(out_stitched_path)
@@ -105,7 +106,8 @@ class StitchService:
                 body_skip_sec=req.body_skip_start,
                 audio_mode=req.audio_mode,
                 aspect_ratio=req.aspect_ratio,
-                message="Ghép nối video 2 nguồn thành công!",
+                transition_duration=req.transition_duration,
+                message=f"Ghép nối video 2 nguồn thành công (chuyển cảnh chậm {req.transition_duration}s)!",
             )
         finally:
             # Dọn dẹp clip hook tạm sau khi đã ghép

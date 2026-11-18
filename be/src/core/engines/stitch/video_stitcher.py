@@ -89,11 +89,12 @@ class VideoStitcher:
         bgm_path: Optional[str] = None,
         bgm_volume: float = 0.9,
         aspect_ratio: str = "9:16",
-        transition_duration: float = 0.45,
+        transition_duration: float = 1.2,
     ) -> str:
         """
         Ghép nối Hook (Đầu) và Body (Đuôi) bằng FFmpeg xfade (mờ dần video 1, hiện dần video 2).
         Hỗ trợ chuẩn 9:16 (1080x1920) hoặc 16:9 (1920x1080).
+        Thời lượng chuyển cảnh mặc định 1.2s giúp hiệu ứng mờ dần chậm rãi, êm dịu và không bị giật/nhanh.
         """
         p_hook = Path(hook_path)
         p_body = Path(body_path)
@@ -110,8 +111,9 @@ class VideoStitcher:
         has_hook_a = VideoStitcher.has_audio_stream(hook_path)
         has_body_a = VideoStitcher.has_audio_stream(body_path)
 
-        # Tính toán offset chuyển cảnh: video 1 mờ dần và video 2 hiện lên
-        trans_dur = min(transition_duration, max(0.2, hook_dur * 0.25))
+        # Tính toán offset chuyển cảnh: video 1 mờ dần chậm rãi và video 2 hiện lên mượt mà
+        max_allowed = max(0.5, hook_dur * 0.5)
+        trans_dur = min(float(transition_duration), max_allowed)
         offset = max(0.1, round(hook_dur - trans_dur, 2))
 
         # 1. Chuẩn hóa 2 luồng video về cùng kích thước & fps

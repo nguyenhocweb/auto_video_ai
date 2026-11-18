@@ -9,6 +9,7 @@ class ManualStitchRequest(BaseModel):
     body_skip_start: float = Field(default=3.0, ge=0.0, le=60.0, description="Số giây cắt bỏ ở đầu Nguồn 2")
     audio_mode: str = Field(default="sequential", description="Chế độ âm thanh: sequential | body_audio | hook_audio | bgm_override")
     aspect_ratio: str = Field(default="9:16", description="Tỷ lệ khung hình: '9:16' (Dọc) hoặc '16:9' (Ngang)")
+    transition_duration: float = Field(default=1.2, ge=0.4, le=5.0, description="Thời lượng chuyển cảnh xfade (giây) - mặc định 1.2s chuyển cảnh chậm mượt mà")
     bgm_id: Optional[str] = Field(None, description="ID bài nhạc nền nếu chọn bgm_override")
 
 
@@ -22,6 +23,7 @@ class ManualStitchResponse(BaseModel):
     body_skip_sec: float
     audio_mode: str
     aspect_ratio: str = "9:16"
+    transition_duration: float = 1.2
     message: str
 
 

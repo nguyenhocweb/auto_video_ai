@@ -213,9 +213,10 @@ class DualSourceWorker:
                 logger.warning(f"Không thể random bài BGM cho video ghép: {ex}")
 
         try:
+            trans_sec = float(dual_cfg.get("transition_duration_sec") or 1.2)
             logger.info(
                 f"Tiến hành ghép: Hook [{hook_doc.get('item_id')}] + "
-                f"Body [{body_item_id}] (Bỏ {skip_sec}s đầu) | Audio: {audio_mode}"
+                f"Body [{body_item_id}] (Bỏ {skip_sec}s đầu) | Audio: {audio_mode} | Trans: {trans_sec}s"
             )
             stitched_file = await asyncio.to_thread(
                 VideoStitcher.stitch_hook_and_body,
@@ -226,6 +227,7 @@ class DualSourceWorker:
                 audio_mode=audio_mode,
                 bgm_path=bgm_file_path,
                 aspect_ratio=str(dual_cfg.get("aspect_ratio") or "9:16"),
+                transition_duration=trans_sec,
             )
 
             hook_id = str(hook_doc.get("id") or "")
