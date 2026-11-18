@@ -9,9 +9,13 @@ import {
 
 export const tiktokService = {
   getAuthUrl: async (scope?: string): Promise<TikTokAuthUrlResponse> => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const params: Record<string, string> = {};
+    if (scope) params.scope = scope;
+    if (origin) params.fe_origin = origin;
     const res = await axiosClient.get<TikTokAuthUrlResponse>(
       "/api/v1/creator/tiktok/auth-url",
-      { params: scope ? { scope } : {} }
+      { params }
     );
     return res.data;
   },

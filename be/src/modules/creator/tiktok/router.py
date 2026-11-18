@@ -26,10 +26,17 @@ def _get_user_id(user: Any) -> str:
 
 
 @tiktok_router.get("/auth-url", response_model=TikTokAuthUrlResponse)
-async def get_auth_url(scope: Optional[str] = Query(None), current_user=Depends(get_current_user)):
+async def get_auth_url(
+    scope: Optional[str] = Query(None),
+    fe_origin: Optional[str] = Query(None),
+    current_user=Depends(get_current_user),
+):
     """Lấy đường dẫn ủy quyền TikTok OAuth v2 để kết nối Kênh."""
     try:
-        url = service.get_auth_url(user_id=_get_user_id(current_user), scope=scope)
+        user_id = _get_user_id(current_user)
+        origin = fe_origin or "https://nguyen-video.vercel.app"
+        state = f"{user_id}___{origin}"
+        url = service.get_auth_url(user_id=state, scope=scope)
         return TikTokAuthUrlResponse(auth_url=url)
     except Exception as ex:
         logger.error(f"Lỗi tạo link TikTok OAuth: {ex}")
@@ -44,7 +51,18 @@ async def oauth_callback(
     error_description: Optional[str] = Query(None),
 ):
     """TikTok chuyển hướng về endpoint này sau khi người dùng cấp quyền."""
-    fe_redirect = "http://localhost:3002/creator/tiktok"
+    user_id = "default_user"
+    fe_origin = "https://nguyen-video.vercel.app"
+
+    if state:
+        if "___" in state:
+            parts = state.split("___", 1)
+            user_id = parts[0] or user_id
+            fe_origin = parts[1] or fe_origin
+        else:
+            user_id = state
+
+    fe_redirect = f"{fe_origin.rstrip('/')}/creator/tiktok"
     if error:
         logger.warning(f"TikTok OAuth từ chối: {error} - {error_description}")
         return RedirectResponse(f"{fe_redirect}?tiktok_error={error}")
@@ -52,7 +70,6 @@ async def oauth_callback(
     if not code:
         raise HTTPException(status_code=400, detail="Thiếu mã Authorization Code từ TikTok.")
 
-    user_id = state or "default_user"
     try:
         await service.handle_callback(code=code, user_id=user_id)
         return RedirectResponse(f"{fe_redirect}?tiktok_connected=true")
