@@ -8,6 +8,7 @@ from src.modules.creator.tiktok.schemas import (
     TikTokChannelListResponse,
     PublishTikTokRequest,
     PublishTikTokResponse,
+    TikTokVideoListResponse,
 )
 from src.modules.creator.tiktok.service import TikTokService
 
@@ -68,6 +69,18 @@ async def get_channels(current_user=Depends(get_current_user)):
     except Exception as ex:
         logger.error(f"Lỗi lấy danh sách kênh TikTok: {ex}")
         raise HTTPException(status_code=500, detail=str(ex))
+
+
+@tiktok_router.get("/channels/{channel_id}/videos", response_model=TikTokVideoListResponse)
+async def get_channel_videos(
+    channel_id: str,
+    max_count: int = Query(20, ge=1, le=50),
+    current_user=Depends(get_current_user),
+):
+    """Lấy danh sách video của một Kênh TikTok."""
+    return await service.get_channel_videos(
+        user_id=_get_user_id(current_user), channel_id=channel_id, max_count=max_count
+    )
 
 
 @tiktok_router.delete("/channels/{channel_id}")

@@ -4,6 +4,7 @@ import {
   TikTokChannelListResponse,
   PublishTikTokRequest,
   PublishTikTokResponse,
+  TikTokVideoListResponse,
 } from "../type/tiktok.type";
 
 export const tiktokService = {
@@ -18,6 +19,15 @@ export const tiktokService = {
   getChannels: async (): Promise<TikTokChannelListResponse> => {
     const res = await axiosClient.get<TikTokChannelListResponse>(
       "/api/v1/creator/tiktok/channels"
+    );
+    return res.data;
+  },
+
+  getChannelVideos: async (
+    channelId: string
+  ): Promise<TikTokVideoListResponse> => {
+    const res = await axiosClient.get<TikTokVideoListResponse>(
+      `/api/v1/creator/tiktok/channels/${channelId}/videos`
     );
     return res.data;
   },

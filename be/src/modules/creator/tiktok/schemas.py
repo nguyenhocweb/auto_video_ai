@@ -47,3 +47,23 @@ class PublishTikTokResponse(BaseModel):
     title: str
     uploaded_at: str
     message: Optional[str] = None
+
+
+class TikTokVideoItem(BaseModel):
+    id: str = Field(..., description="ID của video trên TikTok")
+    title: str = Field(default="", description="Tiêu đề / Caption video")
+    cover_image_url: Optional[str] = Field(None, description="Ảnh bìa video")
+    share_url: Optional[str] = Field(None, description="Link xem video trực tiếp trên TikTok")
+    duration: int = Field(0, description="Độ dài video (giây)")
+    view_count: int = Field(0, description="Lượt xem")
+    like_count: int = Field(0, description="Lượt thích")
+    comment_count: int = Field(0, description="Lượt bình luận")
+    share_count: int = Field(0, description="Lượt chia sẻ")
+    create_time: Optional[int] = Field(None, description="Timestamp tạo video")
+
+
+class TikTokVideoListResponse(BaseModel):
+    videos: List[TikTokVideoItem] = Field(default_factory=list)
+    cursor: Optional[int] = None
+    has_more: bool = False
+

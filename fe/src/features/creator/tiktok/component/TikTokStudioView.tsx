@@ -9,6 +9,7 @@ import { useDisconnectTikTokChannel } from "../hook/useDisconnectTikTokChannel";
 import { TikTokStatsOverview } from "./TikTokStatsOverview";
 import { TikTokChannelCardsList } from "./TikTokChannelCardsList";
 import { TikTokPublishModal } from "./TikTokPublishModal";
+import { TikTokVideosTable } from "./TikTokVideosTable";
 import { TikTokChannelItem } from "../type/tiktok.type";
 
 export const TikTokStudioView: React.FC = () => {
@@ -22,6 +23,7 @@ export const TikTokStudioView: React.FC = () => {
   const disconnectMutation = useDisconnectTikTokChannel();
 
   const channels = data?.channels || [];
+  const activeChannel = selectedChannel || (channels.length > 0 ? channels[0] : null);
 
   useEffect(() => {
     if (searchParams?.get("tiktok_connected") === "true") {
@@ -113,6 +115,10 @@ export const TikTokStudioView: React.FC = () => {
           onDisconnect={handleDisconnect}
           isDisconnecting={disconnectMutation.isPending}
         />
+
+        {channels.length > 0 && (
+          <TikTokVideosTable selectedChannel={activeChannel} />
+        )}
 
         <TikTokPublishModal
           isOpen={isPublishModalOpen}

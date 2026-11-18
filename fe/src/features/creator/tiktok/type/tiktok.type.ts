@@ -42,3 +42,23 @@ export interface PublishTikTokResponse {
   uploaded_at: string;
   message?: string;
 }
+
+export interface TikTokVideoItem {
+  id: string;
+  title: string;
+  cover_image_url?: string | null;
+  share_url?: string | null;
+  duration?: number;
+  view_count?: number;
+  like_count?: number;
+  comment_count?: number;
+  share_count?: number;
+  create_time?: number | null;
+}
+
+export interface TikTokVideoListResponse {
+  videos: TikTokVideoItem[];
+  cursor?: number | null;
+  has_more?: boolean;
+}
+
