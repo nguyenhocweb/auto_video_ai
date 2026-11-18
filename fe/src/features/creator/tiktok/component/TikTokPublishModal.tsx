@@ -20,7 +20,7 @@ export const TikTokPublishModal: React.FC<Props> = ({
   const [mounted, setMounted] = useState(false);
   const [channelId, setChannelId] = useState("");
   const [title, setTitle] = useState("");
-  const [privacyLevel, setPrivacyLevel] = useState<"PUBLIC_TO_EVERYONE" | "MUTUAL_FOLLOW_FRIENDS" | "SELF_ONLY">("PUBLIC_TO_EVERYONE");
+  const [privacyLevel, setPrivacyLevel] = useState<"PUBLIC_TO_EVERYONE" | "MUTUAL_FOLLOW_FRIENDS" | "SELF_ONLY">("SELF_ONLY");
   const [disableComment, setDisableComment] = useState(false);
   const [disableDuet, setDisableDuet] = useState(false);
   const [disableStitch, setDisableStitch] = useState(false);
@@ -171,6 +171,9 @@ export const TikTokPublishModal: React.FC<Props> = ({
                 <span className="text-[11px] font-medium">Chỉ mình tôi</span>
               </button>
             </div>
+            <p className="text-[10px] text-gray-400 mt-1">
+              * Lưu ý: Đối với tài khoản Sandbox / App đang thử nghiệm, TikTok bắt buộc đăng ở chế độ "Chỉ mình tôi" (SELF_ONLY).
+            </p>
           </div>
 
           <div>

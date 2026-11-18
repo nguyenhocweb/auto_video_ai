@@ -32,7 +32,7 @@ class TikTokService:
         if not self.client_key:
             raise HTTPException(status_code=400, detail="Chưa cấu hình TIKTOK_CLIENT_KEY trong hệ thống.")
 
-        target_scopes = scope or "user.info.basic,user.info.profile,user.info.stats,video.list,video.manage"
+        target_scopes = scope or "user.info.basic,user.info.profile,user.info.stats,video.list,video.publish"
         params = {
             "client_key": self.client_key,
             "scope": target_scopes,
@@ -194,12 +194,46 @@ class TikTokService:
             raise HTTPException(status_code=400, detail="Không tìm thấy nội dung file video để đăng.")
 
         video_size = len(video_bytes)
-        # Bước 1: Khởi tạo tác vụ Direct Post Video
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json; charset=UTF-8",
+        }
+
+        # Bước 1: Kiểm tra quyền & cấu hình với Creator Info API
+        allowed_privacy = ["SELF_ONLY"]
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                ci_res = await client.post(
+                    f"{settings.TIKTOK_API_BASE_URL}/post/publish/creator_info/query/",
+                    json={},
+                    headers=headers,
+                )
+                ci_data = ci_res.json()
+                if ci_res.status_code == 200 and "data" in ci_data:
+                    allowed_privacy = ci_data["data"].get("privacy_level_options", ["SELF_ONLY"])
+                elif ci_res.status_code in (400, 401, 403) or "error" in ci_data:
+                    err_msg = str(ci_data.get("error", {}).get("message", ""))
+                    if "scope" in err_msg.lower() or "authorize" in err_msg.lower():
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Tài khoản chưa được cấp quyền đăng (video.publish). Vui lòng thêm Product 'Content Posting API' trong TikTok Developer Portal và liên kết lại kênh.",
+                        )
+        except HTTPException:
+            raise
+        except Exception as ex:
+            logger.warning(f"Creator Info check warning: {ex}")
+
+        # Chọn privacy_level phù hợp: Sandbox luôn yêu cầu SELF_ONLY
+        chosen_privacy = "SELF_ONLY" if self.client_key.startswith("sb") else request.privacy_level
+        if chosen_privacy not in allowed_privacy:
+            chosen_privacy = "SELF_ONLY" if "SELF_ONLY" in allowed_privacy else allowed_privacy[0]
+
+        # Bước 2: Khởi tạo tác vụ Direct Post Video
         init_url = f"{settings.TIKTOK_API_BASE_URL}/post/publish/video/init/"
         payload = {
             "post_info": {
                 "title": request.title,
-                "privacy_level": request.privacy_level,
+                "privacy_level": chosen_privacy,
                 "disable_duet": request.disable_duet,
                 "disable_comment": request.disable_comment,
                 "disable_stitch": request.disable_stitch,
@@ -211,10 +245,6 @@ class TikTokService:
                 "chunk_size": video_size,
                 "total_chunk_count": 1,
             },
-        }
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json; charset=UTF-8",
         }
 
         async with httpx.AsyncClient(timeout=30.0) as client:
