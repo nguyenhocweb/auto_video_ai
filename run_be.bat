@@ -1,26 +1,36 @@
 @echo off
-title Video AI - Backend & Cloudflare Launcher
+title Video AI - Backend & Tunnel Launcher
 chcp 65001 >nul
 echo =====================================================================
-echo         KHOI DONG HE THONG VIDEO AI (FASTAPI + CLOUDFLARE)
+echo         KHỞI ĐỘNG HỆ THỐNG VIDEO AI BACKEND (FASTAPI CỔNG 8001)
 echo =====================================================================
 echo.
-echo Chon che do khoi dong:
-echo   [1] Khoi dong Backend + Cloudflare Tunnel (Ket noi voi Vercel) [MAC DINH]
-echo   [2] Chi khoi dong Backend Local (Chay noi bo tren may)
+echo Chọn chế độ khởi động máy chủ:
+echo   [1] Backend + Ngrok Static Tunnel (Cổng 8001 -^> giant-drudge-pastime.ngrok-free.dev)
+echo       ==^> [MẶC ĐỊNH - DÙNG CHO TIKTOK, FACEBOOK & VERCEL]
 echo.
-set /p choice="Nhap lua chon (1 hoac 2, Enter de chon [1]): "
+echo   [2] Backend + Cloudflare Tunnel (Cổng 8001 -^> trycloudflare.com)
+echo   [3] Chỉ chạy Backend Local (Cổng 8001 - Chạy nội bộ trên máy)
+echo.
+set /p choice="Nhập lựa chọn (1, 2 hoặc 3, nhấn Enter để chọn [1]): "
 if "%choice%"=="" set choice=1
 
 if "%choice%"=="1" (
     echo.
-    echo [*] Dang khoi tao Cloudflare Tunnel o cua so rieng...
-    start "Video AI - Cloudflare Tunnel (HTTPS)" cmd /k "title Cloudflare Tunnel (HTTPS cho Vercel) && echo Dang ket noi Cloudflare Tunnel... && cloudflared tunnel --url http://localhost:8001"
-    echo [*] Da mo cua so Cloudflare Tunnel. Hay copy link https://...trycloudflare.com dan vao Vercel.
+    echo [*] Đang khởi chạy Ngrok Static Tunnel (Cổng 8001)...
+    start "Video AI - Ngrok Tunnel (giant-drudge-pastime.ngrok-free.dev)" cmd /k "title Ngrok Tunnel (TikTok & Vercel) && echo Đang kết nối Ngrok Tunnel tới cổng 8001... && ngrok http --domain=giant-drudge-pastime.ngrok-free.dev 8001"
+    echo [*] Đã mở cửa sổ Ngrok Tunnel (https://giant-drudge-pastime.ngrok-free.dev).
+)
+
+if "%choice%"=="2" (
+    echo.
+    echo [*] Đang khởi tạo Cloudflare Tunnel ở cửa sổ riêng...
+    start "Video AI - Cloudflare Tunnel (HTTPS)" cmd /k "title Cloudflare Tunnel (HTTPS cho Vercel) && echo Đang kết nối Cloudflare Tunnel... && cloudflared tunnel --url http://localhost:8001"
+    echo [*] Đã mở cửa sổ Cloudflare Tunnel. Hãy copy link https://...trycloudflare.com dán vào Vercel.
 )
 
 echo.
-echo [*] Dang khoi dong Backend FastAPI tai cong 8001...
+echo [*] Đang khởi động Backend FastAPI tại cổng 8001...
 cd /d "%~dp0be"
 python -m uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
 pause
