@@ -57,6 +57,13 @@ class Settings(BaseSettings):
     YOUTUBE_CLIENT_ID: str = ""
     YOUTUBE_CLIENT_SECRET: str = ""
     YOUTUBE_REDIRECT_URI: str = "http://localhost:8001/api/v1/creator/youtube/callback"
+
+    # TikTok Publisher Settings
+    TIKTOK_CLIENT_KEY: str = ""
+    TIKTOK_CLIENT_SECRET: str = ""
+    TIKTOK_REDIRECT_URI: str = "https://giant-drudge-pastime.ngrok-free.dev/api/v1/creator/tiktok/callback"
+    TIKTOK_AUTH_BASE_URL: str = "https://www.tiktok.com/v2/auth/authorize/"
+    TIKTOK_API_BASE_URL: str = "https://open.tiktokapis.com/v2"
     
     # Internal Paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent

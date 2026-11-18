@@ -6,6 +6,7 @@ const axiosClient = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
   },
   timeout: 300000, // 300s (5 phút) cho AI model loading & generation
 });

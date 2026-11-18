@@ -11,6 +11,7 @@ import {
   FaTimes,
   FaMicrophoneAlt,
   FaFilm,
+  FaMagic,
   FaShieldAlt,
   FaFacebook,
   FaYoutube,
@@ -44,6 +45,7 @@ export const MobileNav: React.FC = () => {
   const creatorItems = [
     { label: "AI Voice Studio", href: "/creator/voice", icon: FaMicrophoneAlt, badge: "OmniVoice" },
     { label: "AI Kể Chuyện & Phim", href: "/creator/storyboard", icon: FaFilm, badge: "Storyboard" },
+    { label: "Mẫu Video CapCut", href: "/creator/templates", icon: FaMagic, badge: "CapCut FX" },
     { label: "Auto Tải Video", href: "/creator/video", icon: FaCloudDownloadAlt, badge: "Douyin/TikTok" },
     { label: "Soi Policy & Viral", href: "/creator/inspector", icon: FaShieldAlt, badge: "Inspector" },
     { label: "Facebook Reels", href: "/creator/facebook", icon: FaFacebook, badge: "Pages & Reels" },

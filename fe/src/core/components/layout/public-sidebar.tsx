@@ -19,6 +19,7 @@ import {
   FaYoutube,
   FaMusic,
   FaFilm,
+  FaMagic,
 } from "react-icons/fa";
 import { SiTiktok } from "react-icons/si";
 import { useAuth } from "@/src/features/shared/auth/hook/useAuth";
@@ -40,6 +41,13 @@ export const PublicSidebar: React.FC = () => {
       icon: FaFilm,
       disabled: false,
       badge: "Storyboard",
+    },
+    {
+      label: "Mẫu Video CapCut",
+      href: "/creator/templates",
+      icon: FaMagic,
+      disabled: false,
+      badge: "CapCut FX",
     },
     {
       label: "Auto Tải Video",
@@ -68,6 +76,13 @@ export const PublicSidebar: React.FC = () => {
       icon: FaYoutube,
       disabled: false,
       badge: "Channels & Shorts",
+    },
+    {
+      label: "TikTok Studio",
+      href: "/creator/tiktok",
+      icon: SiTiktok,
+      disabled: false,
+      badge: "Đa Kênh & Video",
     },
     {
       label: "Cấu hình Douyin",

@@ -60,6 +60,8 @@ ba/voice_training/
 ffcache*
 temp_*
 test_*
+scratch/
+be/tests/scratch/
 
 # 5. IDE & Operating System
 bin/
