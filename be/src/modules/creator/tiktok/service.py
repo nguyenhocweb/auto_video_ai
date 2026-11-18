@@ -25,15 +25,15 @@ class TikTokService:
         self.client_secret = settings.TIKTOK_CLIENT_SECRET
         self.redirect_uri = settings.TIKTOK_REDIRECT_URI
 
-    def get_auth_url(self, user_id: str) -> str:
+    def get_auth_url(self, user_id: str, scope: Optional[str] = None) -> str:
         """Tạo đường dẫn ủy quyền TikTok OAuth v2 kèm scopes."""
         if not self.client_key:
             raise HTTPException(status_code=400, detail="Chưa cấu hình TIKTOK_CLIENT_KEY trong hệ thống.")
 
-        scopes = "user.info.basic,video.upload,video.publish"
+        target_scopes = scope or "user.info.basic,video.upload,video.publish"
         params = {
             "client_key": self.client_key,
-            "scope": scopes,
+            "scope": target_scopes,
             "response_type": "code",
             "redirect_uri": self.redirect_uri,
             "state": user_id,

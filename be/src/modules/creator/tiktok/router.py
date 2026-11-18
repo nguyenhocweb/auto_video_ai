@@ -25,10 +25,10 @@ def _get_user_id(user: Any) -> str:
 
 
 @tiktok_router.get("/auth-url", response_model=TikTokAuthUrlResponse)
-async def get_auth_url(current_user=Depends(get_current_user)):
+async def get_auth_url(scope: Optional[str] = Query(None), current_user=Depends(get_current_user)):
     """Lấy đường dẫn ủy quyền TikTok OAuth v2 để kết nối Kênh."""
     try:
-        url = service.get_auth_url(user_id=_get_user_id(current_user))
+        url = service.get_auth_url(user_id=_get_user_id(current_user), scope=scope)
         return TikTokAuthUrlResponse(auth_url=url)
     except Exception as ex:
         logger.error(f"Lỗi tạo link TikTok OAuth: {ex}")
