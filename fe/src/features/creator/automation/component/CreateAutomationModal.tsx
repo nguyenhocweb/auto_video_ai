@@ -2,17 +2,20 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { FaRobot, FaTimes, FaCheck, FaSpinner } from "react-icons/fa";
 import { toast } from "sonner";
 import {
   AutomationCampaign,
   AutomationCampaignCreatePayload,
+  DualSourceConfig,
   ProcessingMode,
   SourceChannelConfig,
   TargetPageConfig,
   TargetYouTubeChannelConfig,
 } from "../type/automation.type";
+import { CreateAutomationModalHeader } from "./CreateAutomationModalHeader";
+import { CreateAutomationModalFooter } from "./CreateAutomationModalFooter";
 import { SourceChannelSelector } from "./SourceChannelSelector";
+import { DualSourceConfigSection } from "./DualSourceConfigSection";
 import { TargetPageSelector } from "./TargetPageSelector";
 import { TargetYouTubeChannelSelector } from "./TargetYouTubeChannelSelector";
 import { CrawlStrategySection } from "./CrawlStrategySection";
@@ -25,6 +28,7 @@ interface CreateAutomationModalProps {
   onSubmit: (payload: AutomationCampaignCreatePayload) => void;
   isLoading?: boolean;
   initialData?: AutomationCampaign | null;
+  defaultDualSource?: boolean;
 }
 
 export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
@@ -33,10 +37,12 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
   onSubmit,
   isLoading = false,
   initialData = null,
+  defaultDualSource = false,
 }) => {
   const [mounted, setMounted] = useState(false);
   const [name, setName] = useState("");
   const [sourceChannels, setSourceChannels] = useState<SourceChannelConfig[]>([]);
+  const [dualSource, setDualSource] = useState<DualSourceConfig | undefined>(undefined);
   const [targetPages, setTargetPages] = useState<TargetPageConfig[]>([]);
   const [targetYouTubeChannels, setTargetYouTubeChannels] = useState<TargetYouTubeChannelConfig[]>([]);
   const [fbPostType, setFbPostType] = useState<"reel" | "feed">("reel");
@@ -45,7 +51,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
   const [onlyToday, setOnlyToday] = useState(true);
   const [maxVideoAgeHours, setMaxVideoAgeHours] = useState<number>(24);
   const [onlyNew, setOnlyNew] = useState(true);
-  const [mode, setMode] = useState<ProcessingMode>("vietsub");
+  const [mode, setMode] = useState<ProcessingMode>("both");
   const [voiceSource, setVoiceSource] = useState<"preset" | "profile">("preset");
   const [voicePreset, setVoicePreset] = useState("vi-VN-NamMinhNeural");
   const [voiceProfileId, setVoiceProfileId] = useState<string | undefined>(undefined);
@@ -63,6 +69,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
     if (initialData) {
       setName(initialData.name);
       setSourceChannels(initialData.source_channels);
+      setDualSource(initialData.dual_source);
       setTargetPages(initialData.target_pages);
       setTargetYouTubeChannels(initialData.target_youtube_channels || []);
       setFbPostType(initialData.fb_post_type || "reel");
@@ -87,6 +94,19 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
     } else {
       setName("");
       setSourceChannels([]);
+      setDualSource(
+        defaultDualSource
+          ? {
+              enabled: true,
+              hook_channels: [],
+              hook_duration_sec: 3.5,
+              body_skip_start_sec: 3.0,
+              audio_mode: "sequential",
+              aspect_ratio: "9:16",
+              fallback_policy: "reuse_oldest",
+            }
+          : undefined
+      );
       setTargetPages([]);
       setTargetYouTubeChannels([]);
       setFbPostType("reel");
@@ -105,7 +125,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       setAutoAddTag(true);
       setHashtags("#Douyin #Reels #Shorts #Viral");
     }
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, defaultDualSource]);
 
   if (!isOpen || !mounted) return null;
 
@@ -116,7 +136,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       return;
     }
     if (sourceChannels.length === 0) {
-      toast.warning("Vui lòng chọn ít nhất 1 kênh Douyin nguồn!");
+      toast.warning("Vui lòng chọn ít nhất 1 kênh Douyin nguồn (Thân bài)!");
       return;
     }
     if (targetPages.length === 0 && targetYouTubeChannels.length === 0) {
@@ -127,6 +147,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
     onSubmit({
       name: name.trim(),
       source_channels: sourceChannels,
+      dual_source: dualSource,
       target_pages: targetPages,
       target_youtube_channels: targetYouTubeChannels,
       publish_to_youtube: targetYouTubeChannels.length > 0,
@@ -154,29 +175,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col max-h-[92vh] overflow-hidden my-auto">
-        {/* Header Modal */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
-              <FaRobot />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-gray-900">
-                {initialData ? "Chỉnh Sửa Chiến Dịch Automation" : "Tạo Cấu Hình Automation Mới"}
-              </h3>
-              <p className="text-[11px] text-gray-400">
-                Tự động cào video mới nhất Douyin và xuất bản Reels Facebook &amp; YouTube Shorts
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-          >
-            <FaTimes />
-          </button>
-        </div>
+        <CreateAutomationModalHeader isEditing={Boolean(initialData)} onClose={onClose} />
 
         {/* Nội dung Form cuộn */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5 text-xs text-gray-700">
@@ -188,14 +187,32 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="VD: Auto Douyin Review Phim -> 2 Fanpage & 1 Kênh Shorts"
+              placeholder="VD: Auto Cào & Ghép Hook Douyin -> FB Reels & Shorts"
               className="w-full px-3.5 py-2 border border-gray-300 rounded-xl outline-none focus:border-blue-500 font-medium"
             />
           </div>
 
+          {/* Kênh nguồn thân bài */}
           <SourceChannelSelector
             selectedChannels={sourceChannels}
             onChange={(chs) => setSourceChannels(chs)}
+          />
+
+          {/* Cấu hình Ghép Nối 2 Nguồn (Hook & Body) */}
+          <DualSourceConfigSection
+            config={dualSource}
+            onChange={setDualSource}
+            disabled={isLoading}
+          />
+
+          {/* Chiến lược cào: Khoảng thời gian nào & Cách bao lâu cào 1 lần */}
+          <CrawlStrategySection
+            intervalMin={intervalMin}
+            onChangeInterval={setIntervalMin}
+            maxVideoAgeHours={maxVideoAgeHours}
+            onChangeMaxVideoAgeHours={setMaxVideoAgeHours}
+            onlyNew={onlyNew}
+            onChangeOnlyNew={setOnlyNew}
           />
 
           <TargetPageSelector
@@ -210,15 +227,6 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
             onChange={(chs) => setTargetYouTubeChannels(chs)}
             videoType={ytVideoType}
             onChangeVideoType={setYtVideoType}
-          />
-
-          <CrawlStrategySection
-            intervalMin={intervalMin}
-            onChangeInterval={setIntervalMin}
-            maxVideoAgeHours={maxVideoAgeHours}
-            onChangeMaxVideoAgeHours={setMaxVideoAgeHours}
-            onlyNew={onlyNew}
-            onChangeOnlyNew={setOnlyNew}
           />
 
           <ProcessingModeSelector
@@ -252,35 +260,12 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
           />
         </form>
 
-        {/* Footer Modal */}
-        <div className="flex items-center justify-end gap-3 px-6 py-3.5 border-t border-gray-100 flex-shrink-0 bg-gray-50/50">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isLoading}
-            className="px-4 py-2 border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold rounded-xl text-xs transition-colors"
-          >
-            Hủy Bỏ
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md shadow-blue-500/20 disabled:opacity-60"
-          >
-            {isLoading ? (
-              <>
-                <FaSpinner className="animate-spin" />
-                <span>Đang lưu...</span>
-              </>
-            ) : (
-              <>
-                <FaCheck />
-                <span>{initialData ? "Cập Nhật Chiến Dịch" : "Lưu & Khởi Chạy"}</span>
-              </>
-            )}
-          </button>
-        </div>
+        <CreateAutomationModalFooter
+          isEditing={Boolean(initialData)}
+          isLoading={isLoading}
+          onClose={onClose}
+          onSubmit={handleSubmit}
+        />
       </div>
     </div>,
     document.body

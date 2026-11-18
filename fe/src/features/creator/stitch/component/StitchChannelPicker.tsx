@@ -54,6 +54,7 @@ export const StitchChannelPicker: React.FC<StitchChannelPickerProps> = ({
   const [inputMode, setInputMode] = useState<"channel" | "direct">("channel");
   const [selectedChannelUrls, setSelectedChannelUrls] = useState<string[]>([]);
   const [customChannelUrl, setCustomChannelUrl] = useState("");
+  const [maxAgeHours, setMaxAgeHours] = useState<number>(24);
   const [isScanning, setIsScanning] = useState(false);
   const [scannedVideos, setScannedVideos] = useState<ChannelVideoItem[]>([]);
   const [selectedVideoTitle, setSelectedVideoTitle] = useState<string>("");
@@ -103,14 +104,33 @@ export const StitchChannelPicker: React.FC<StitchChannelPickerProps> = ({
       }
 
       allVideos.sort((a, b) => (b.created_timestamp || 0) - (a.created_timestamp || 0));
-      setScannedVideos(allVideos);
+
+      // Lọc theo khoảng thời gian video đăng nếu có yêu cầu
+      let targetList = allVideos;
+      if (maxAgeHours > 0) {
+        const nowSec = Date.now() / 1000;
+        const cutoffSec = nowSec - maxAgeHours * 3600;
+        const filtered = allVideos.filter((v) => {
+          if (v.created_timestamp && v.created_timestamp > 0) {
+            return v.created_timestamp >= cutoffSec;
+          }
+          return v.is_today;
+        });
+        if (filtered.length > 0) {
+          targetList = filtered;
+        } else {
+          toast.info(`Không có video trong ${maxAgeHours}h qua. Đã chọn video mới nhất hiện có.`);
+        }
+      }
+
+      setScannedVideos(targetList);
 
       // Tự động chọn video mới nhất đầu tiên
-      const newestVideo = allVideos[0];
+      const newestVideo = targetList[0];
       onSelectUrl(newestVideo.video_url);
       setSelectedVideoTitle(newestVideo.title || "Video mới nhất");
       toast.success(
-        `Đã quét được ${allVideos.length} video! Tự động chọn video mới nhất: "${newestVideo.title?.slice(0, 35)}..."`
+        `Đã quét được ${targetList.length} video (${maxAgeHours > 0 ? `trong ${maxAgeHours}h qua` : "tất cả"})! Tự động chọn video mới nhất: "${newestVideo.title?.slice(0, 35)}..."`
       );
     } catch (err: any) {
       toast.error(err?.message || "Lỗi khi quét kênh!");
@@ -170,6 +190,8 @@ export const StitchChannelPicker: React.FC<StitchChannelPickerProps> = ({
             onToggleChannel={toggleChannelSelection}
             customUrl={customChannelUrl}
             onChangeCustomUrl={setCustomChannelUrl}
+            maxAgeHours={maxAgeHours}
+            onChangeMaxAgeHours={setMaxAgeHours}
             onScan={handleScanLatestVideos}
             isScanning={isScanning}
             accentColor={accentColor}

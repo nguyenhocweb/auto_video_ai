@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaLayerGroup, FaMagic, FaDatabase, FaInfoCircle } from "react-icons/fa";
+import { FaLayerGroup, FaMagic, FaDatabase, FaInfoCircle, FaRobot } from "react-icons/fa";
 import { FadeIn } from "@/src/core/components/animation/FadeIn";
 import { StitchManualForm } from "./StitchManualForm";
 import { StitchResultCard } from "./StitchResultCard";
 import { HookInventoryTable } from "./HookInventoryTable";
+import { StitchCampaignsList } from "./StitchCampaignsList";
 import { useManualStitch } from "../hook/useManualStitch";
 import { ManualStitchPayload, ManualStitchResult } from "../type/stitch.type";
 
 export const StitchStudioView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"manual" | "inventory">("manual");
+  const [activeTab, setActiveTab] = useState<"manual" | "auto" | "inventory">("manual");
   const [lastResult, setLastResult] = useState<ManualStitchResult | null>(null);
   const { mutateAsync: manualStitch, isPending } = useManualStitch();
 
@@ -42,7 +43,7 @@ export const StitchStudioView: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Kỹ thuật giữ chân người xem: Cắt lấy 0s - Xs video Hook cuốn hút ghép vào thân bài video chính
+                Kỹ thuật viral giữ chân người xem: Cắt lấy 0s - Xs video Hook cuốn hút ghép vào thân bài video chính
               </p>
             </div>
           </div>
@@ -50,16 +51,16 @@ export const StitchStudioView: React.FC = () => {
           {/* Quick info tooltip badge */}
           <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl">
             <FaInfoCircle className="text-blue-500 text-sm" />
-            <span>Tự động xuất chuẩn 9:16 (1080x1920)</span>
+            <span>Tự động xuất chuẩn 9:16 &amp; 16:9 với hiệu ứng xfade</span>
           </div>
         </div>
 
         {/* Tab switcher */}
-        <div className="flex border-b border-gray-200 gap-4">
+        <div className="flex border-b border-gray-200 gap-4 overflow-x-auto">
           <button
             type="button"
             onClick={() => setActiveTab("manual")}
-            className={`pb-3 text-xs font-black uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+            className={`pb-3 text-xs font-black uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === "manual"
                 ? "border-indigo-600 text-indigo-600"
                 : "border-transparent text-gray-400 hover:text-gray-700"
@@ -70,8 +71,20 @@ export const StitchStudioView: React.FC = () => {
 
           <button
             type="button"
+            onClick={() => setActiveTab("auto")}
+            className={`pb-3 text-xs font-black uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === "auto"
+                ? "border-indigo-600 text-indigo-600"
+                : "border-transparent text-gray-400 hover:text-gray-700"
+            }`}
+          >
+            <FaRobot /> Auto Cào &amp; Ghép Định Kỳ
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("inventory")}
-            className={`pb-3 text-xs font-black uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+            className={`pb-3 text-xs font-black uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === "inventory"
                 ? "border-indigo-600 text-indigo-600"
                 : "border-transparent text-gray-400 hover:text-gray-700"
@@ -89,7 +102,10 @@ export const StitchStudioView: React.FC = () => {
           </div>
         )}
 
-        {/* Tab 2: Kho đệm Hook */}
+        {/* Tab 2: Chiến dịch Auto cào & ghép định kỳ */}
+        {activeTab === "auto" && <StitchCampaignsList />}
+
+        {/* Tab 3: Kho đệm Hook */}
         {activeTab === "inventory" && <HookInventoryTable />}
       </div>
     </FadeIn>

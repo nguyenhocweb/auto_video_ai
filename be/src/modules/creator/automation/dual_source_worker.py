@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 
 from src.core.config import settings
+from src.core.utils.date_utils import get_vn_now
 from src.core.engines.stitch.video_stitcher import VideoStitcher
 from src.core.engines.douyin.extractor import DouyinExtractor
 from src.modules.creator.automation.hook_pool_repo import HookPoolMongoRepository
@@ -42,6 +43,11 @@ class DualSourceWorker:
         hook_duration = float(dual_cfg.get("hook_duration_sec") or 3.5)
         total_harvested = 0
 
+        now_dt = get_vn_now()
+        now_ts = now_dt.timestamp()
+        max_age_hours = float(campaign.get("max_video_age_hours") if campaign.get("max_video_age_hours") is not None else 24)
+        only_today = bool(campaign.get("only_today", True))
+
         for target_ch in hook_channels:
             ch_url = target_ch.get("channel_url")
             ch_name = target_ch.get("name") or "Kênh Hook"
@@ -64,6 +70,17 @@ class DualSourceWorker:
                 item_id = str(v.get("item_id", ""))
                 if not item_id:
                     continue
+
+                # Lọc theo khoảng thời gian video đăng (Độ mới)
+                if max_age_hours > 0:
+                    create_ts = int(v.get("created_timestamp") or 0)
+                    if create_ts > 0:
+                        age_hours = (now_ts - create_ts) / 3600.0
+                        if age_hours > max_age_hours:
+                            logger.info(f"[{ch_name}] Hook video {item_id} đăng cách đây {age_hours:.1f}h (> {max_age_hours}h). Bỏ qua!")
+                            continue
+                    elif only_today and not v.get("is_today", False):
+                        continue
 
                 already_saved = await self.hook_repo.is_hook_already_saved(campaign_id, item_id)
                 if already_saved:

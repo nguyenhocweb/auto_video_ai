@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FaCheck, FaSearch, FaSpinner } from "react-icons/fa";
+import { FaCheck, FaHistory, FaSearch, FaSpinner } from "react-icons/fa";
 import { SavedChannel } from "@/src/features/creator/video/type/video.type";
 
 interface StitchSavedChannelsListProps {
@@ -11,6 +11,8 @@ interface StitchSavedChannelsListProps {
   onToggleChannel: (url: string) => void;
   customUrl: string;
   onChangeCustomUrl: (url: string) => void;
+  maxAgeHours: number;
+  onChangeMaxAgeHours: (hours: number) => void;
   onScan: () => void;
   isScanning: boolean;
   accentColor: "blue" | "purple";
@@ -24,6 +26,8 @@ export const StitchSavedChannelsList: React.FC<StitchSavedChannelsListProps> = (
   onToggleChannel,
   customUrl,
   onChangeCustomUrl,
+  maxAgeHours,
+  onChangeMaxAgeHours,
   onScan,
   isScanning,
   accentColor,
@@ -41,7 +45,7 @@ export const StitchSavedChannelsList: React.FC<StitchSavedChannelsListProps> = (
     <div className="space-y-3">
       <div>
         <div className="flex justify-between items-center text-xs font-bold text-gray-700 mb-1.5">
-          <span>Chọn Kênh Douyin Theo Dõi:</span>
+          <span>Chọn Kênh Douyin Nguồn:</span>
           <span className="text-[11px] text-gray-400 font-normal">
             Đã chọn: <b className="text-gray-700">{selectedUrls.length}</b> kênh
           </span>
@@ -103,21 +107,43 @@ export const StitchSavedChannelsList: React.FC<StitchSavedChannelsListProps> = (
         )}
       </div>
 
-      {/* Dán link kênh mới thủ công & nút Quét */}
-      <div className="flex gap-2">
+      {/* Dán link kênh mới thủ công */}
+      <div>
         <input
           type="text"
           placeholder="Hoặc dán URL kênh Douyin khác..."
           value={customUrl}
           disabled={disabled || isScanning}
           onChange={(e) => onChangeCustomUrl(e.target.value)}
-          className={`flex-1 text-xs px-3 py-1.5 rounded-lg border border-gray-300 ${ringAccent} bg-white`}
+          className={`w-full text-xs px-3 py-1.5 rounded-lg border border-gray-300 ${ringAccent} bg-white`}
         />
+      </div>
+
+      {/* Bộ chọn: Cào lấy video khoảng nào & Nút Quét */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-1 border-t border-gray-200/60">
+        <div className="flex items-center gap-1.5 text-xs text-gray-700">
+          <FaHistory className="text-blue-500 text-[11px] shrink-0" />
+          <span className="font-semibold text-[11px] shrink-0">Khoảng thời gian:</span>
+          <select
+            value={maxAgeHours}
+            disabled={disabled || isScanning}
+            onChange={(e) => onChangeMaxAgeHours(Number(e.target.value))}
+            className="text-[11px] px-2 py-1 bg-white border border-gray-300 rounded-md font-semibold text-gray-800 outline-none"
+          >
+            <option value={2}>Trong 2 giờ qua (Nóng nhất)</option>
+            <option value={6}>Trong 6 giờ qua</option>
+            <option value={12}>Trong 12 giờ qua</option>
+            <option value={24}>Trong 24 giờ qua (Hôm nay)</option>
+            <option value={48}>Trong 48 giờ qua (2 ngày)</option>
+            <option value={0}>Tất cả video (Không giới hạn)</option>
+          </select>
+        </div>
+
         <button
           type="button"
           disabled={disabled || isScanning}
           onClick={onScan}
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer ${accentBtn} disabled:opacity-50`}
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer ${accentBtn} disabled:opacity-50`}
         >
           {isScanning ? (
             <>
