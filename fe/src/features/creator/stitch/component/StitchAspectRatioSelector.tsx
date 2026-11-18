@@ -40,7 +40,7 @@ export const StitchAspectRatioSelector: React.FC<StitchAspectRatioSelectorProps>
           <div>
             <div className="text-xs font-bold">9:16 (Video Dọc 1080x1920)</div>
             <div className="text-[11px] text-gray-500 mt-0.5">
-              Chuẩn Shorts, TikTok, Facebook Reels. Scale pad tự động giữ nét.
+              Chuẩn Shorts, TikTok, Facebook Reels. Tự động lót nền mờ (Blurred BG) nếu video nguồn 16:9, triệt tiêu viền đen.
             </div>
           </div>
         </button>
@@ -65,7 +65,7 @@ export const StitchAspectRatioSelector: React.FC<StitchAspectRatioSelectorProps>
           <div>
             <div className="text-xs font-bold">16:9 (Video Ngang 1920x1080)</div>
             <div className="text-[11px] text-gray-500 mt-0.5">
-              Chuẩn YouTube Video dài, Facebook Feed. Tự động căn giữa khung hình.
+              Chuẩn YouTube Video dài, Facebook Feed. Tự động lót nền mờ (Blurred BG) nếu video nguồn 9:16, triệt tiêu viền đen.
             </div>
           </div>
         </button>

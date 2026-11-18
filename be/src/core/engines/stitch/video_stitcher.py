@@ -54,16 +54,24 @@ class VideoStitcher:
 
         tw, th = (1920, 1080) if aspect_ratio == "16:9" else (1080, 1920)
         has_audio = VideoStitcher.has_audio_stream(raw_video_path)
-        vf_filter = (
-            f"scale={tw}:{th}:force_original_aspect_ratio=decrease,"
-            f"pad={tw}:{th}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps=30"
+
+        # Tạo nền video mờ (Blurred Background) thay vì dải đen nếu tỷ lệ video gốc khác với tỷ lệ đích
+        filter_complex = (
+            f"[0:v]split[bg_in][fg_in];"
+            f"[bg_in]scale={tw}:{th}:force_original_aspect_ratio=increase,"
+            f"crop={tw}:{th},boxblur=25:5,eq=brightness=-0.08:contrast=1.05,setsar=1,fps=30[bg];"
+            f"[fg_in]scale={tw}:{th}:force_original_aspect_ratio=decrease,setsar=1,fps=30[fg];"
+            f"[bg][fg]overlay=(W-w)/2:(H-h)/2[vout]"
         )
 
-        cmd = ["ffmpeg", "-y", "-ss", "0", "-t", str(duration), "-i", str(p_in), "-vf", vf_filter]
+        cmd = [
+            "ffmpeg", "-y", "-ss", "0", "-t", str(duration), "-i", str(p_in),
+            "-filter_complex", filter_complex, "-map", "[vout]",
+        ]
         if has_audio:
-            cmd.extend(["-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2"])
+            cmd.extend(["-map", "0:a:0", "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2"])
         else:
-            cmd.extend(["-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-shortest"])
+            cmd.extend(["-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-map", "1:a", "-shortest"])
 
         cmd.extend([
             "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
@@ -116,15 +124,22 @@ class VideoStitcher:
         trans_dur = min(float(transition_duration), max_allowed)
         offset = max(0.1, round(hook_dur - trans_dur, 2))
 
-        # 1. Chuẩn hóa 2 luồng video về cùng kích thước & fps
+        # 1. Chuẩn hóa 2 luồng video về cùng kích thước & fps với NỀN MỜ (Blurred Background)
+        # Thay vì pad viền đen, luồng nền scale phóng to phủ kín khung hình + làm mờ (boxblur),
+        # luồng gốc scale giữ tỷ lệ đặt chính giữa lên trên nền mờ.
         vf_hook = (
-            f"[0:v]fps=30,scale={tw}:{th}:force_original_aspect_ratio=decrease,"
-            f"pad={tw}:{th}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1[v0];"
+            f"[0:v]split[bg0_in][fg0_in];"
+            f"[bg0_in]scale={tw}:{th}:force_original_aspect_ratio=increase,crop={tw}:{th},"
+            f"boxblur=25:5,eq=brightness=-0.08:contrast=1.05,setsar=1,fps=30[bg0];"
+            f"[fg0_in]scale={tw}:{th}:force_original_aspect_ratio=decrease,setsar=1,fps=30[fg0];"
+            f"[bg0][fg0]overlay=(W-w)/2:(H-h)/2[v0];"
         )
         vf_body = (
-            f"[1:v]trim=start={body_skip_sec},setpts=PTS-STARTPTS,fps=30,"
-            f"scale={tw}:{th}:force_original_aspect_ratio=decrease,"
-            f"pad={tw}:{th}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1[v1];"
+            f"[1:v]trim=start={body_skip_sec},setpts=PTS-STARTPTS,split[bg1_in][fg1_in];"
+            f"[bg1_in]scale={tw}:{th}:force_original_aspect_ratio=increase,crop={tw}:{th},"
+            f"boxblur=25:5,eq=brightness=-0.08:contrast=1.05,setsar=1,fps=30[bg1];"
+            f"[fg1_in]scale={tw}:{th}:force_original_aspect_ratio=decrease,setsar=1,fps=30[fg1];"
+            f"[bg1][fg1]overlay=(W-w)/2:(H-h)/2[v1];"
         )
         # Chuyển cảnh xfade mượt mà: transition=fade (Crossfade / Dissolve)
         vf_transition = f"[v0][v1]xfade=transition=fade:duration={trans_dur}:offset={offset}[vout]"
