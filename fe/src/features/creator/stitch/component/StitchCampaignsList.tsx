@@ -6,7 +6,7 @@ import { useGetCampaigns } from "@/src/features/creator/automation/hook/useGetCa
 import { useCreateCampaign } from "@/src/features/creator/automation/hook/useCreateCampaign";
 import { useUpdateCampaign } from "@/src/features/creator/automation/hook/useUpdateCampaign";
 import { useDeleteCampaign } from "@/src/features/creator/automation/hook/useDeleteCampaign";
-import { CreateAutomationModal } from "@/src/features/creator/automation/component/CreateAutomationModal";
+import { CreateStitchCampaignModal } from "./CreateStitchCampaignModal";
 import { StitchCampaignCard } from "./StitchCampaignCard";
 import {
   AutomationCampaign,
@@ -115,8 +115,8 @@ export const StitchCampaignsList: React.FC = () => {
         </div>
       )}
 
-      {/* Modal Tạo/Sửa Cấu hình */}
-      <CreateAutomationModal
+      {/* Modal Tạo/Sửa Cấu hình Ghép Nối Chuyên Biệt */}
+      <CreateStitchCampaignModal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
@@ -125,7 +125,6 @@ export const StitchCampaignsList: React.FC = () => {
         onSubmit={handleSubmit}
         isLoading={createMutation.isPending || updateMutation.isPending}
         initialData={editingCampaign}
-        defaultDualSource={true}
       />
     </div>
   );

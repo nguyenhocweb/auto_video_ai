@@ -19,7 +19,8 @@ export const AutomationCampaignsList: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<AutomationCampaign | null>(null);
 
-  const campaigns = data?.campaigns || [];
+  // Chỉ lấy các chiến dịch Cào & Đăng bài thông thường (không phải Ghép 2 nguồn)
+  const campaigns = (data?.campaigns || []).filter((c) => !c.dual_source?.enabled);
 
   const handleOpenCreate = () => {
     setEditingCampaign(null);

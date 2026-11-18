@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import {
   AutomationCampaign,
   AutomationCampaignCreatePayload,
-  DualSourceConfig,
   ProcessingMode,
   SourceChannelConfig,
   TargetPageConfig,
@@ -15,7 +14,6 @@ import {
 import { CreateAutomationModalHeader } from "./CreateAutomationModalHeader";
 import { CreateAutomationModalFooter } from "./CreateAutomationModalFooter";
 import { SourceChannelSelector } from "./SourceChannelSelector";
-import { DualSourceConfigSection } from "./DualSourceConfigSection";
 import { TargetPageSelector } from "./TargetPageSelector";
 import { TargetYouTubeChannelSelector } from "./TargetYouTubeChannelSelector";
 import { CrawlStrategySection } from "./CrawlStrategySection";
@@ -28,7 +26,6 @@ interface CreateAutomationModalProps {
   onSubmit: (payload: AutomationCampaignCreatePayload) => void;
   isLoading?: boolean;
   initialData?: AutomationCampaign | null;
-  defaultDualSource?: boolean;
 }
 
 export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
@@ -37,12 +34,10 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
   onSubmit,
   isLoading = false,
   initialData = null,
-  defaultDualSource = false,
 }) => {
   const [mounted, setMounted] = useState(false);
   const [name, setName] = useState("");
   const [sourceChannels, setSourceChannels] = useState<SourceChannelConfig[]>([]);
-  const [dualSource, setDualSource] = useState<DualSourceConfig | undefined>(undefined);
   const [targetPages, setTargetPages] = useState<TargetPageConfig[]>([]);
   const [targetYouTubeChannels, setTargetYouTubeChannels] = useState<TargetYouTubeChannelConfig[]>([]);
   const [fbPostType, setFbPostType] = useState<"reel" | "feed">("reel");
@@ -69,7 +64,6 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
     if (initialData) {
       setName(initialData.name);
       setSourceChannels(initialData.source_channels);
-      setDualSource(initialData.dual_source);
       setTargetPages(initialData.target_pages);
       setTargetYouTubeChannels(initialData.target_youtube_channels || []);
       setFbPostType(initialData.fb_post_type || "reel");
@@ -94,19 +88,6 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
     } else {
       setName("");
       setSourceChannels([]);
-      setDualSource(
-        defaultDualSource
-          ? {
-              enabled: true,
-              hook_channels: [],
-              hook_duration_sec: 3.5,
-              body_skip_start_sec: 3.0,
-              audio_mode: "sequential",
-              aspect_ratio: "9:16",
-              fallback_policy: "reuse_oldest",
-            }
-          : undefined
-      );
       setTargetPages([]);
       setTargetYouTubeChannels([]);
       setFbPostType("reel");
@@ -125,7 +106,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       setAutoAddTag(true);
       setHashtags("#Douyin #Reels #Shorts #Viral");
     }
-  }, [initialData, isOpen, defaultDualSource]);
+  }, [initialData, isOpen]);
 
   if (!isOpen || !mounted) return null;
 
@@ -136,7 +117,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       return;
     }
     if (sourceChannels.length === 0) {
-      toast.warning("Vui lòng chọn ít nhất 1 kênh Douyin nguồn (Thân bài)!");
+      toast.warning("Vui lòng chọn ít nhất 1 kênh Douyin nguồn!");
       return;
     }
     if (targetPages.length === 0 && targetYouTubeChannels.length === 0) {
@@ -147,7 +128,6 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
     onSubmit({
       name: name.trim(),
       source_channels: sourceChannels,
-      dual_source: dualSource,
       target_pages: targetPages,
       target_youtube_channels: targetYouTubeChannels,
       publish_to_youtube: targetYouTubeChannels.length > 0,
@@ -157,7 +137,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       only_today: maxVideoAgeHours > 0 && maxVideoAgeHours <= 24,
       max_video_age_hours: Number(maxVideoAgeHours),
       only_new_unprocessed: onlyNew,
-      processing_mode: dualSource?.enabled ? "download_only" : mode,
+      processing_mode: mode,
       voice_source: voiceSource,
       voice_preset: voicePreset,
       voice_profile_id: voiceProfileId,
@@ -187,23 +167,15 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="VD: Auto Cào & Ghép Hook Douyin -> FB Reels & Shorts"
+              placeholder="VD: Cào Kênh Hoạt Hình Douyin -> FB Reels & Shorts"
               className="w-full px-3.5 py-2 border border-gray-300 rounded-xl outline-none focus:border-blue-500 font-medium"
             />
           </div>
 
-          {/* Kênh nguồn thân bài */}
+          {/* Kênh nguồn Douyin */}
           <SourceChannelSelector
             selectedChannels={sourceChannels}
             onChange={(chs) => setSourceChannels(chs)}
-            isDualSourceEnabled={Boolean(dualSource?.enabled)}
-          />
-
-          {/* Cấu hình Ghép Nối 2 Nguồn (Hook & Body) */}
-          <DualSourceConfigSection
-            config={dualSource}
-            onChange={setDualSource}
-            disabled={isLoading}
           />
 
           {/* Chiến lược cào: Khoảng thời gian nào & Cách bao lâu cào 1 lần */}
@@ -233,7 +205,6 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
           <ProcessingModeSelector
             mode={mode}
             onChangeMode={setMode}
-            isDualSource={Boolean(dualSource?.enabled)}
             voiceSource={voiceSource}
             voicePreset={voicePreset}
             voiceProfileId={voiceProfileId}
@@ -241,13 +212,6 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
             onChangeSelectedBgmIds={setSelectedBgmIds}
             keepOriginalAudio={keepOriginalAudio}
             onChangeKeepOriginalAudio={setKeepOriginalAudio}
-            audioMode={dualSource?.audio_mode || (keepOriginalAudio ? "body_audio" : "bgm_override")}
-            onChangeAudioMode={(newMode) => {
-              if (dualSource) {
-                setDualSource({ ...dualSource, audio_mode: newMode });
-              }
-              setKeepOriginalAudio(newMode !== "bgm_override");
-            }}
             onChangeVoiceConfig={(src, idOrPreset, vName) => {
               setVoiceSource(src);
               if (src === "profile") {

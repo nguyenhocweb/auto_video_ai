@@ -10,13 +10,11 @@ import { toast } from "sonner";
 interface SourceChannelSelectorProps {
   selectedChannels: SourceChannelConfig[];
   onChange: (channels: SourceChannelConfig[]) => void;
-  isDualSourceEnabled?: boolean;
 }
 
 export const SourceChannelSelector: React.FC<SourceChannelSelectorProps> = ({
   selectedChannels,
   onChange,
-  isDualSourceEnabled = false,
 }) => {
   const { data: savedData, isLoading } = useGetSavedChannels();
   const [customUrl, setCustomUrl] = useState("");
@@ -74,27 +72,13 @@ export const SourceChannelSelector: React.FC<SourceChannelSelectorProps> = ({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-          <FaVideo className={isDualSourceEnabled ? "text-purple-600" : "text-blue-500"} />
-          {isDualSourceEnabled ? (
-            <span className="flex items-center gap-1.5">
-              <span>Chọn kênh Douyin Thân Bài (Đoạn Đuôi - Nội dung chính):</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-700">
-                Đoạn Đuôi
-              </span>
-            </span>
-          ) : (
-            <span>Chọn kênh Douyin nguồn theo dõi:</span>
-          )}
+          <FaVideo className="text-blue-500" />
+          <span>Chọn kênh Douyin nguồn theo dõi:</span>
         </label>
-        <span className={`text-[11px] font-semibold ${isDualSourceEnabled ? "text-purple-600" : "text-blue-600"}`}>
+        <span className="text-[11px] font-semibold text-blue-600">
           Đã chọn: {selectedChannels.length} kênh
         </span>
       </div>
-      {isDualSourceEnabled && (
-        <p className="text-[11px] text-gray-500 -mt-1">
-          💡 Đây là video nội dung chính sẽ đăng lên Facebook/YouTube (hệ thống sẽ giữ nội dung từ giây thứ 3 đến hết).
-        </p>
-      )}
 
       {/* Danh sách Kênh Đã Lưu Trong Database */}
       {isLoading ? (
