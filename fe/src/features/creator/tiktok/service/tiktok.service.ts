@@ -7,9 +7,10 @@ import {
 } from "../type/tiktok.type";
 
 export const tiktokService = {
-  getAuthUrl: async (): Promise<TikTokAuthUrlResponse> => {
+  getAuthUrl: async (scope?: string): Promise<TikTokAuthUrlResponse> => {
     const res = await axiosClient.get<TikTokAuthUrlResponse>(
-      "/api/v1/creator/tiktok/auth-url"
+      "/api/v1/creator/tiktok/auth-url",
+      { params: scope ? { scope } : {} }
     );
     return res.data;
   },
