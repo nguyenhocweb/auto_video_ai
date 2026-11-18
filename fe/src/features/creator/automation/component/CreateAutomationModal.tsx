@@ -239,6 +239,13 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
             onChangeSelectedBgmIds={setSelectedBgmIds}
             keepOriginalAudio={keepOriginalAudio}
             onChangeKeepOriginalAudio={setKeepOriginalAudio}
+            audioMode={dualSource?.audio_mode || (keepOriginalAudio ? "body_audio" : "bgm_override")}
+            onChangeAudioMode={(newMode) => {
+              if (dualSource) {
+                setDualSource({ ...dualSource, audio_mode: newMode });
+              }
+              setKeepOriginalAudio(newMode !== "bgm_override");
+            }}
             onChangeVoiceConfig={(src, idOrPreset, vName) => {
               setVoiceSource(src);
               if (src === "profile") {

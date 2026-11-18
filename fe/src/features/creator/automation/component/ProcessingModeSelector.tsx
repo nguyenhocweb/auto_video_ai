@@ -21,6 +21,8 @@ interface ProcessingModeSelectorProps {
   onChangeSelectedBgmIds?: (ids: string[]) => void;
   keepOriginalAudio?: boolean;
   onChangeKeepOriginalAudio?: (keep: boolean) => void;
+  audioMode?: "sequential" | "body_audio" | "hook_audio" | "bgm_override";
+  onChangeAudioMode?: (mode: "sequential" | "body_audio" | "hook_audio" | "bgm_override") => void;
 }
 
 export const ProcessingModeSelector: React.FC<ProcessingModeSelectorProps> = ({
@@ -34,6 +36,8 @@ export const ProcessingModeSelector: React.FC<ProcessingModeSelectorProps> = ({
   onChangeSelectedBgmIds,
   keepOriginalAudio = false,
   onChangeKeepOriginalAudio,
+  audioMode,
+  onChangeAudioMode,
 }) => {
   const { data: profilesData } = useGetVoiceProfiles();
   const profiles = profilesData?.profiles || [];
@@ -146,6 +150,8 @@ export const ProcessingModeSelector: React.FC<ProcessingModeSelectorProps> = ({
           onChangeSelectedBgmIds={onChangeSelectedBgmIds}
           keepOriginalAudio={keepOriginalAudio}
           onChangeKeepOriginalAudio={onChangeKeepOriginalAudio}
+          audioMode={audioMode}
+          onChangeAudioMode={onChangeAudioMode}
         />
       )}
 
