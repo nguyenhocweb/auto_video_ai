@@ -56,15 +56,16 @@ class TikTokService:
             resp = await client.post(token_url, data=data, headers=headers)
             res_data = resp.json()
 
-        if resp.status_code != 200 or "data" not in res_data:
+        token_info = res_data.get("data") if isinstance(res_data.get("data"), dict) else res_data
+        access_token = token_info.get("access_token")
+
+        if resp.status_code != 200 or not access_token:
             err_msg = res_data.get("error_description") or res_data.get("message") or resp.text
             logger.error(f"Lỗi đổi TikTok token: {err_msg}")
             raise HTTPException(status_code=400, detail=f"TikTok OAuth Error: {err_msg}")
 
-        token_info = res_data["data"]
-        access_token = token_info.get("access_token")
         refresh_token = token_info.get("refresh_token")
-        open_id = token_info.get("open_id")
+        open_id = token_info.get("open_id") or ""
         scope = token_info.get("scope")
         expires_in = token_info.get("expires_in", 86400)
 
@@ -91,7 +92,7 @@ class TikTokService:
 
     async def _fetch_user_profile(self, access_token: str) -> Dict[str, Any]:
         """Gọi TikTok API lấy profile người dùng."""
-        fields = "open_id,union_id,avatar_url,display_name,username,follower_count,likes_count,video_count"
+        fields = "open_id,union_id,avatar_url,display_name"
         url = f"{settings.TIKTOK_API_BASE_URL}/user/info/?fields={fields}"
         headers = {"Authorization": f"Bearer {access_token}"}
 
@@ -99,8 +100,10 @@ class TikTokService:
             async with httpx.AsyncClient(timeout=15.0) as client:
                 res = await client.get(url, headers=headers)
                 data = res.json()
-                if res.status_code == 200 and "data" in data and "user" in data["data"]:
-                    return data["data"]["user"]
+                if res.status_code == 200:
+                    user_obj = data.get("data", {}).get("user") or data.get("user")
+                    if isinstance(user_obj, dict):
+                        return user_obj
         except Exception as ex:
             logger.warning(f"Không thể lấy profile TikTok: {ex}")
         return {}
