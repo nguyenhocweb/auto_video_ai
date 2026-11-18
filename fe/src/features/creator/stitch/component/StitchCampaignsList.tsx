@@ -1,41 +1,57 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  FaRobot,
-  FaPlay,
-  FaClock,
-  FaHistory,
-  FaLayerGroup,
-  FaPlus,
-  FaCheckCircle,
-  FaPauseCircle,
-  FaSpinner,
-} from "react-icons/fa";
+import { FaRobot, FaPlus, FaSpinner } from "react-icons/fa";
 import { useGetCampaigns } from "@/src/features/creator/automation/hook/useGetCampaigns";
-import { useRunCampaignNow } from "@/src/features/creator/automation/hook/useRunCampaignNow";
-import { useToggleCampaign } from "@/src/features/creator/automation/hook/useToggleCampaign";
-import { CreateAutomationModal } from "@/src/features/creator/automation/component/CreateAutomationModal";
 import { useCreateCampaign } from "@/src/features/creator/automation/hook/useCreateCampaign";
-import { AutomationCampaignCreatePayload } from "@/src/features/creator/automation/type/automation.type";
+import { useUpdateCampaign } from "@/src/features/creator/automation/hook/useUpdateCampaign";
+import { useDeleteCampaign } from "@/src/features/creator/automation/hook/useDeleteCampaign";
+import { CreateAutomationModal } from "@/src/features/creator/automation/component/CreateAutomationModal";
+import { StitchCampaignCard } from "./StitchCampaignCard";
+import {
+  AutomationCampaign,
+  AutomationCampaignCreatePayload,
+} from "@/src/features/creator/automation/type/automation.type";
 
 export const StitchCampaignsList: React.FC = () => {
   const { data: campaignData, isLoading } = useGetCampaigns();
-  const { mutateAsync: createCampaign, isPending: isCreating } = useCreateCampaign();
-  const runMutation = useRunCampaignNow();
-  const toggleMutation = useToggleCampaign();
+  const createMutation = useCreateCampaign();
+  const updateMutation = useUpdateCampaign();
+  const deleteMutation = useDeleteCampaign();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<AutomationCampaign | null>(null);
 
   const campaigns = campaignData?.campaigns || [];
   const dualSourceCampaigns = campaigns.filter((c) => c.dual_source?.enabled);
 
-  const handleCreate = async (payload: AutomationCampaignCreatePayload) => {
-    try {
-      await createCampaign(payload);
-      setIsModalOpen(false);
-    } catch {
-      // toast in hook
+  const handleOpenCreate = () => {
+    setEditingCampaign(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (camp: AutomationCampaign) => {
+    setEditingCampaign(camp);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = (payload: AutomationCampaignCreatePayload) => {
+    if (editingCampaign) {
+      updateMutation.mutate(
+        { campaignId: editingCampaign.id, payload },
+        {
+          onSuccess: () => {
+            setIsModalOpen(false);
+            setEditingCampaign(null);
+          },
+        }
+      );
+    } else {
+      createMutation.mutate(payload, {
+        onSuccess: () => {
+          setIsModalOpen(false);
+        },
+      });
     }
   };
 
@@ -54,7 +70,7 @@ export const StitchCampaignsList: React.FC = () => {
 
         <button
           type="button"
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenCreate}
           className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-indigo-500/20 cursor-pointer shrink-0"
         >
           <FaPlus /> Tạo Chiến Dịch Auto Ghép Định Kỳ
@@ -62,109 +78,24 @@ export const StitchCampaignsList: React.FC = () => {
       </div>
 
       {isLoading ? (
-        <div className="p-8 text-center text-xs text-gray-400 flex items-center justify-center gap-2 bg-white rounded-2xl border">
-          <FaSpinner className="animate-spin text-sm" /> Đang tải danh sách chiến dịch...
+        <div className="p-12 text-center text-xs text-gray-400 flex items-center justify-center gap-2 bg-white rounded-2xl border border-gray-200">
+          <FaSpinner className="animate-spin text-sm text-indigo-600" /> Đang tải danh sách chiến dịch...
         </div>
       ) : dualSourceCampaigns.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {dualSourceCampaigns.map((c) => {
-            const hookSec = c.dual_source?.hook_duration_sec || 3.5;
-            const bodySkip = c.dual_source?.body_skip_start_sec || 3.0;
-            const hookChannelsCount = c.dual_source?.hook_channels?.length || 1;
-            const ratio = c.dual_source?.aspect_ratio || "9:16";
-
-            return (
-              <div
-                key={c.id}
-                className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3.5 hover:border-indigo-300 transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center gap-1">
-                      <FaLayerGroup /> Ghép 2 Nguồn ({ratio})
-                    </span>
-                    <button
-                      type="button"
-                      disabled={toggleMutation.isPending}
-                      onClick={() =>
-                        toggleMutation.mutate({ campaignId: c.id, isActive: !c.is_active })
-                      }
-                      className={`text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
-                        c.is_active ? "text-emerald-600" : "text-gray-400"
-                      }`}
-                    >
-                      {c.is_active ? (
-                        <>
-                          <FaCheckCircle className="text-[10px]" /> Đang hoạt động
-                        </>
-                      ) : (
-                        <>
-                          <FaPauseCircle className="text-[10px]" /> Tạm dừng
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  <h4 className="text-sm font-bold text-gray-900 mt-2 truncate" title={c.name}>
-                    {c.name}
-                  </h4>
-
-                  {/* Lịch cào & Quy tắc ghép nối */}
-                  <div className="mt-2.5 p-3 bg-gray-50 rounded-xl space-y-1.5 text-xs text-gray-600">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500 flex items-center gap-1.5">
-                        <FaClock className="text-amber-500" /> Tần suất cào:
-                      </span>
-                      <span className="font-bold text-gray-800">
-                        Mỗi {c.crawl_interval_minutes} phút
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500 flex items-center gap-1.5">
-                        <FaHistory className="text-blue-500" /> Lấy video đăng trong:
-                      </span>
-                      <span className="font-bold text-blue-700">
-                        {c.max_video_age_hours ? `Trong ${c.max_video_age_hours} giờ qua` : "Hôm nay"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1 border-t border-gray-200/60">
-                      <span className="text-gray-500">Đoạn đầu (Hook):</span>
-                      <span className="font-semibold text-blue-600">
-                        0s → {hookSec}s ({hookChannelsCount} kênh)
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Đoạn cuối (Body):</span>
-                      <span className="font-semibold text-purple-600">
-                        Bỏ {bodySkip}s đầu ({c.source_channels.length} kênh)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer action */}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
-                  <span className="text-[11px] text-gray-400">
-                    Đã ghép &amp; đăng: <b className="text-gray-700">{c.total_posted}</b> video
-                  </span>
-                  <button
-                    type="button"
-                    disabled={runMutation.isPending}
-                    onClick={() => runMutation.mutate(c.id)}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    <FaPlay className="text-[9px]" /> Quét &amp; Ghép Ngay
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+        /* Kích cỡ w chuẩn grid 3 cột giống Mẫu 2 */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {dualSourceCampaigns.map((camp) => (
+            <StitchCampaignCard
+              key={camp.id}
+              campaign={camp}
+              onEdit={handleOpenEdit}
+              onDelete={(id) => deleteMutation.mutate(id)}
+              isDeleting={deleteMutation.isPending}
+            />
+          ))}
         </div>
       ) : (
-        <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-gray-300 space-y-3">
+        <div className="p-10 text-center bg-white rounded-2xl border border-dashed border-gray-300 space-y-3">
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto text-xl">
             <FaRobot />
           </div>
@@ -176,7 +107,7 @@ export const StitchCampaignsList: React.FC = () => {
           </p>
           <button
             type="button"
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenCreate}
             className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-md shadow-indigo-500/20 cursor-pointer"
           >
             <FaPlus /> Thiết Lập Chiến Dịch Auto Ghép Đầu Tiên
@@ -184,12 +115,16 @@ export const StitchCampaignsList: React.FC = () => {
         </div>
       )}
 
-      {/* Modal tạo cấu hình */}
+      {/* Modal Tạo/Sửa Cấu hình */}
       <CreateAutomationModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreate}
-        isLoading={isCreating}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingCampaign(null);
+        }}
+        onSubmit={handleSubmit}
+        isLoading={createMutation.isPending || updateMutation.isPending}
+        initialData={editingCampaign}
         defaultDualSource={true}
       />
     </div>
