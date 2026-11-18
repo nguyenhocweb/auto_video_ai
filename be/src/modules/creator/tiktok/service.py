@@ -32,7 +32,7 @@ class TikTokService:
         if not self.client_key:
             raise HTTPException(status_code=400, detail="Chưa cấu hình TIKTOK_CLIENT_KEY trong hệ thống.")
 
-        target_scopes = scope or "user.info.basic,user.info.profile,user.info.stats,video.list,video.publish"
+        target_scopes = scope or "user.info.basic,user.info.profile,user.info.stats,video.list,video.publish,video.upload"
         params = {
             "client_key": self.client_key,
             "scope": target_scopes,
