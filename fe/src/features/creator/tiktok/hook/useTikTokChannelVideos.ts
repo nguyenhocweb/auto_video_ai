@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { tiktokService } from "../service/tiktok.service";
+import { TikTokVideoListResponse } from "../type/tiktok.type";
 
 export const useTikTokChannelVideos = (channelId?: string) => {
-  return useQuery({
+  return useQuery<TikTokVideoListResponse>({
     queryKey: ["tiktok-channel-videos", channelId],
     queryFn: () => {
       if (!channelId) {

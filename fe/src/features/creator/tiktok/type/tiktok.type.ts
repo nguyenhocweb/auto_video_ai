@@ -46,6 +46,7 @@ export interface PublishTikTokResponse {
 export interface TikTokVideoItem {
   id: string;
   title: string;
+  video_description?: string | null;
   cover_image_url?: string | null;
   share_url?: string | null;
   duration?: number;
