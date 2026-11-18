@@ -196,6 +196,7 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
           <SourceChannelSelector
             selectedChannels={sourceChannels}
             onChange={(chs) => setSourceChannels(chs)}
+            isDualSourceEnabled={Boolean(dualSource?.enabled)}
           />
 
           {/* Cấu hình Ghép Nối 2 Nguồn (Hook & Body) */}

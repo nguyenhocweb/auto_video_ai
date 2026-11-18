@@ -46,14 +46,21 @@ export const HookChannelPickerSub: React.FC<HookChannelPickerSubProps> = ({
 
   return (
     <div>
-      <div className="flex justify-between items-center text-xs font-bold text-gray-700 mb-1">
+      <div className="flex justify-between items-center text-xs font-bold text-gray-800 mb-1">
         <span className="flex items-center gap-1.5">
-          <FaVideo className="text-blue-600" /> Chọn kênh Douyin nguồn Hook (Đoạn đầu):
+          <FaVideo className="text-blue-600" />
+          <span>Chọn kênh Douyin nguồn Hook (Đoạn Đầu):</span>
+          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-700">
+            Đoạn Đầu (Hook)
+          </span>
         </span>
         <span className="text-[11px] font-semibold text-blue-600">
           Đã chọn: {hookChannels.length} kênh
         </span>
       </div>
+      <p className="text-[11px] text-gray-500 mb-2">
+        🎯 Hệ thống tự động cào video mới từ các kênh này, cắt lấy vài giây đầu làm mồi câu và ghép đè lên đầu video thân bài.
+      </p>
 
       {isLoadingSaved ? (
         <div className="text-[11px] text-gray-400 py-1">Đang tải danh sách kênh...</div>

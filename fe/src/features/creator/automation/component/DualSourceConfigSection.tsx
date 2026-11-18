@@ -90,6 +90,18 @@ export const DualSourceConfigSection: React.FC<DualSourceConfigSectionProps> = (
       {/* Chi tiết cấu hình khi bật */}
       {isEnabled && config && (
         <div className="pt-2 space-y-3 border-t border-indigo-100 text-xs text-gray-700 animate-[fadeIn_0.2s_ease-out]">
+          {/* Mini diagram cấu trúc ghép nối */}
+          <div className="bg-white/90 p-2 rounded-lg border border-indigo-200/80 flex flex-wrap items-center gap-1.5 text-[11px] font-bold shadow-2xs">
+            <span className="text-gray-500 shrink-0">Cấu trúc:</span>
+            <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+              [Đoạn Đầu: {config.hook_duration_sec}s] Kênh Hook (dưới)
+            </span>
+            <span className="text-indigo-500 font-black">→ xfade →</span>
+            <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-800">
+              [Đoạn Đuôi: Hết video] Kênh Thân Bài (trên)
+            </span>
+          </div>
+
           {/* Sub component chọn kênh Hook */}
           <HookChannelPickerSub
             hookChannels={config.hook_channels || []}
