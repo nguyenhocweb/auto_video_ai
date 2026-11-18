@@ -25,6 +25,9 @@ class DualSourceConfig(BaseModel):
     enabled: bool = Field(default=False, description="Bật chế độ ghép 2 nguồn (Hook + Body)")
     hook_channel_url: Optional[str] = Field(None, description="Link kênh nguồn 1 (Kênh Hook)")
     hook_channel_name: Optional[str] = Field(None, description="Tên kênh nguồn 1")
+    hook_channels: Optional[List[SourceChannelConfig]] = Field(
+        default=[], description="Danh sách các kênh nguồn Hook (Đoạn đầu)"
+    )
     hook_duration_sec: float = Field(default=3.5, ge=1.0, le=30.0, description="Số giây lấy từ đầu video nguồn 1")
     body_skip_start_sec: float = Field(default=3.0, ge=0.0, le=60.0, description="Số giây bỏ qua ở đầu video nguồn 2")
     audio_mode: str = Field(default="sequential", description="Chế độ âm thanh: sequential | body_audio | hook_audio | bgm_override")

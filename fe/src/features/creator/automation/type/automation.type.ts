@@ -21,6 +21,18 @@ export interface TargetYouTubeChannelConfig {
 
 export type ProcessingMode = "both" | "vietsub" | "dubbing" | "download_only";
 
+export interface DualSourceConfig {
+  enabled: boolean;
+  hook_channel_url?: string;
+  hook_channel_name?: string;
+  hook_channels?: SourceChannelConfig[];
+  hook_duration_sec: number;
+  body_skip_start_sec: number;
+  audio_mode: "sequential" | "body_audio" | "hook_audio" | "bgm_override";
+  aspect_ratio: "9:16" | "16:9";
+  fallback_policy: "reuse_oldest" | "wait" | "bypass";
+}
+
 export interface AutomationCampaign {
   id: string;
   user_id: string;
@@ -45,6 +57,7 @@ export interface AutomationCampaign {
   selected_bgm_ids?: string[];
   keep_original_audio?: boolean;
   bgm_volume?: number;
+  dual_source?: DualSourceConfig;
   publish_to_youtube?: boolean;
   youtube_video_type?: "video" | "shorts";
   fb_post_type?: "reel" | "feed";
@@ -80,6 +93,7 @@ export interface AutomationCampaignCreatePayload {
   selected_bgm_ids?: string[];
   keep_original_audio?: boolean;
   bgm_volume?: number;
+  dual_source?: DualSourceConfig;
   publish_to_youtube?: boolean;
   youtube_video_type?: "video" | "shorts";
   fb_post_type?: "reel" | "feed";
@@ -108,6 +122,7 @@ export interface AutomationCampaignUpdatePayload {
   selected_bgm_ids?: string[];
   keep_original_audio?: boolean;
   bgm_volume?: number;
+  dual_source?: DualSourceConfig;
   publish_to_youtube?: boolean;
   youtube_video_type?: "video" | "shorts";
   fb_post_type?: "reel" | "feed";

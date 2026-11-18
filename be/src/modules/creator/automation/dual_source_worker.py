@@ -22,95 +22,106 @@ class DualSourceWorker:
         self.hook_repo = hook_repo or HookPoolMongoRepository()
 
     async def harvest_hook_channel(self, campaign: Dict[str, Any]) -> int:
-        """Quét Kênh 1 (Kênh Hook), tải video mới nhất, cắt đoạn đầu và nạp vào kho đệm."""
+        """Quét Kênh Hook (hỗ trợ nhiều kênh), tải video mới nhất, cắt đoạn đầu và nạp vào kho đệm."""
         dual_cfg = campaign.get("dual_source") or {}
         if not dual_cfg.get("enabled"):
             return 0
 
-        hook_url = dual_cfg.get("hook_channel_url")
-        if not hook_url:
+        hook_channels = dual_cfg.get("hook_channels") or []
+        if not hook_channels and dual_cfg.get("hook_channel_url"):
+            hook_channels = [{
+                "channel_url": dual_cfg["hook_channel_url"],
+                "name": dual_cfg.get("hook_channel_name") or "Kênh Hook",
+            }]
+
+        if not hook_channels:
             return 0
 
         campaign_id = str(campaign["id"])
         user_id = str(campaign.get("user_id", "default_user"))
         hook_duration = float(dual_cfg.get("hook_duration_sec") or 3.5)
-        hook_channel_name = dual_cfg.get("hook_channel_name") or "Kênh Hook"
+        total_harvested = 0
 
-        logger.info(f"[{campaign.get('name')}] Đang quét Kênh Hook [{hook_channel_name}]...")
-        try:
-            crawled = await AutomationExecutor.crawl_channel_videos(hook_url, limit=8)
-        except Exception as ex:
-            logger.warning(f"Không thể cào Kênh Hook {hook_channel_name}: {ex}")
-            return 0
-
-        if not crawled:
-            return 0
-
-        crawled.sort(key=lambda x: x.get("created_timestamp", 0), reverse=True)
-        harvested_count = 0
-
-        for v in crawled:
-            item_id = str(v.get("item_id", ""))
-            if not item_id:
+        for target_ch in hook_channels:
+            ch_url = target_ch.get("channel_url")
+            ch_name = target_ch.get("name") or "Kênh Hook"
+            if not ch_url:
                 continue
 
-            already_saved = await self.hook_repo.is_hook_already_saved(campaign_id, item_id)
-            if already_saved:
-                continue
-
-            video_url = v.get("video_url") or f"https://www.douyin.com/video/{item_id}"
-            stream_url = v.get("clean_stream_url")
-            if not stream_url:
-                try:
-                    info = await DouyinExtractor.extract_no_watermark_video(video_url)
-                    stream_url = info.get("video_url")
-                except Exception as ex:
-                    logger.warning(f"Lỗi extract hook video {item_id}: {ex}")
-                    continue
-
-            if not stream_url:
-                continue
-
-            temp_hooks_dir = settings.TEMP_DIR / "hook_pool"
-            temp_hooks_dir.mkdir(parents=True, exist_ok=True)
-            raw_tmp_path = temp_hooks_dir / f"raw_hook_{item_id}_{uuid.uuid4().hex[:6]}.mp4"
-            clipped_hook_path = temp_hooks_dir / f"hook_{campaign_id}_{item_id}.mp4"
-
+            logger.info(f"[{campaign.get('name')}] Đang quét Kênh Hook [{ch_name}]...")
             try:
-                await asyncio.to_thread(ExecutorHelpers.download_stream_to_file, stream_url, str(raw_tmp_path))
-                if not raw_tmp_path.exists() or raw_tmp_path.stat().st_size == 0:
+                crawled = await AutomationExecutor.crawl_channel_videos(ch_url, limit=6)
+            except Exception as ex:
+                logger.warning(f"Không thể cào Kênh Hook {ch_name}: {ex}")
+                continue
+
+            if not crawled:
+                continue
+
+            crawled.sort(key=lambda x: x.get("created_timestamp", 0), reverse=True)
+
+            for v in crawled:
+                item_id = str(v.get("item_id", ""))
+                if not item_id:
                     continue
 
-                await asyncio.to_thread(
-                    VideoStitcher.extract_hook_clip,
-                    raw_video_path=str(raw_tmp_path),
-                    duration=hook_duration,
-                    out_path=str(clipped_hook_path),
-                    aspect_ratio=dual_cfg.get("aspect_ratio") or "9:16",
-                )
+                already_saved = await self.hook_repo.is_hook_already_saved(campaign_id, item_id)
+                if already_saved:
+                    continue
 
-                await self.hook_repo.save_hook({
-                    "campaign_id": campaign_id,
-                    "user_id": user_id,
-                    "item_id": item_id,
-                    "video_url": video_url,
-                    "title": v.get("title") or f"Hook {item_id}",
-                    "hook_path": str(clipped_hook_path),
-                    "duration": hook_duration,
-                })
-                harvested_count += 1
-                logger.info(f"Đã nạp thành công Hook [{item_id}] ({hook_duration}s) vào kho!")
-                break
-            except Exception as ex:
-                logger.error(f"Lỗi xử lý cắt Hook clip {item_id}: {ex}")
-            finally:
-                if raw_tmp_path.exists():
+                video_url = v.get("video_url") or f"https://www.douyin.com/video/{item_id}"
+                stream_url = v.get("clean_stream_url")
+                if not stream_url:
                     try:
-                        raw_tmp_path.unlink()
-                    except Exception:
-                        pass
+                        info = await DouyinExtractor.extract_no_watermark_video(video_url)
+                        stream_url = info.get("video_url")
+                    except Exception as ex:
+                        logger.warning(f"Lỗi extract hook video {item_id}: {ex}")
+                        continue
 
-        return harvested_count
+                if not stream_url:
+                    continue
+
+                temp_hooks_dir = settings.TEMP_DIR / "hook_pool"
+                temp_hooks_dir.mkdir(parents=True, exist_ok=True)
+                raw_tmp_path = temp_hooks_dir / f"raw_hook_{item_id}_{uuid.uuid4().hex[:6]}.mp4"
+                clipped_hook_path = temp_hooks_dir / f"hook_{campaign_id}_{item_id}.mp4"
+
+                try:
+                    await asyncio.to_thread(ExecutorHelpers.download_stream_to_file, stream_url, str(raw_tmp_path))
+                    if not raw_tmp_path.exists() or raw_tmp_path.stat().st_size == 0:
+                        continue
+
+                    await asyncio.to_thread(
+                        VideoStitcher.extract_hook_clip,
+                        raw_video_path=str(raw_tmp_path),
+                        duration=hook_duration,
+                        out_path=str(clipped_hook_path),
+                        aspect_ratio=dual_cfg.get("aspect_ratio") or "9:16",
+                    )
+
+                    await self.hook_repo.save_hook({
+                        "campaign_id": campaign_id,
+                        "user_id": user_id,
+                        "item_id": item_id,
+                        "video_url": video_url,
+                        "title": v.get("title") or f"Hook {item_id}",
+                        "hook_path": str(clipped_hook_path),
+                        "duration": hook_duration,
+                    })
+                    total_harvested += 1
+                    logger.info(f"Đã nạp thành công Hook [{item_id}] ({hook_duration}s) từ kênh [{ch_name}] vào kho!")
+                    break
+                except Exception as ex:
+                    logger.error(f"Lỗi xử lý cắt Hook clip {item_id}: {ex}")
+                finally:
+                    if raw_tmp_path.exists():
+                        try:
+                            raw_tmp_path.unlink()
+                        except Exception:
+                            pass
+
+        return total_harvested
 
     async def prepare_stitched_video(
         self,
