@@ -93,42 +93,29 @@ class TikTokService:
         return saved
 
     async def _fetch_user_profile(self, access_token: str) -> Dict[str, Any]:
-        """Gọi TikTok API lấy profile người dùng an toàn và phân tầng."""
+        """Gọi TikTok API lấy profile người dùng an toàn."""
         headers = {"Authorization": f"Bearer {access_token}"}
         profile: Dict[str, Any] = {}
-
-        # Bước 1: Luôn lấy thông tin cơ bản được bảo đảm bởi user.info.basic
-        basic_fields = "open_id,union_id,avatar_url,avatar_large_url,display_name"
-        basic_url = f"{settings.TIKTOK_API_BASE_URL}/user/info/?fields={basic_fields}"
+        fields = "open_id,union_id,avatar_url,avatar_large_url,display_name,username,follower_count,likes_count,video_count"
+        url = f"{settings.TIKTOK_API_BASE_URL}/user/info/?fields={fields}"
         try:
             async with httpx.AsyncClient(timeout=15.0) as client:
-                res = await client.get(basic_url, headers=headers)
+                res = await client.get(url, headers=headers)
                 data = res.json()
                 if res.status_code == 200:
-                    user_obj = data.get("data", {}).get("user") or data.get("user")
-                    if isinstance(user_obj, dict):
-                        profile.update(user_obj)
-                        if user_obj.get("avatar_large_url"):
-                            profile["avatar_url"] = user_obj["avatar_large_url"]
+                    u_obj = data.get("data", {}).get("user") or data.get("user")
+                    if isinstance(u_obj, dict):
+                        profile.update(u_obj)
+                        if u_obj.get("avatar_large_url"):
+                            profile["avatar_url"] = u_obj["avatar_large_url"]
                 else:
-                    logger.warning(f"Lỗi lấy basic profile TikTok ({res.status_code}): {res.text}")
+                    b_res = await client.get(f"{settings.TIKTOK_API_BASE_URL}/user/info/?fields=open_id,avatar_url,display_name", headers=headers)
+                    if b_res.status_code == 200:
+                        b_obj = b_res.json().get("data", {}).get("user") or b_res.json().get("user")
+                        if isinstance(b_obj, dict):
+                            profile.update(b_obj)
         except Exception as ex:
-            logger.warning(f"Không thể lấy basic profile TikTok: {ex}")
-
-        # Bước 2: Thử lấy thêm username và stats nếu scope cho phép (không làm hỏng profile cơ bản)
-        stats_fields = "username,follower_count,likes_count,video_count"
-        stats_url = f"{settings.TIKTOK_API_BASE_URL}/user/info/?fields={stats_fields}"
-        try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.get(stats_url, headers=headers)
-                data = res.json()
-                if res.status_code == 200:
-                    user_obj = data.get("data", {}).get("user") or data.get("user")
-                    if isinstance(user_obj, dict):
-                        profile.update(user_obj)
-        except Exception:
-            pass
-
+            logger.warning(f"Lỗi lấy profile TikTok: {ex}")
         return profile
 
     async def get_channel_videos(
@@ -143,11 +130,9 @@ class TikTokService:
         fields = "id,title,video_description,duration,cover_image_url,share_url,view_count,like_count,comment_count,share_count,create_time"
         url = f"{settings.TIKTOK_API_BASE_URL}/video/list/?fields={fields}"
         headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
-        payload = {"max_count": max_count}
-
         try:
             async with httpx.AsyncClient(timeout=15.0) as client:
-                res = await client.post(url, json=payload, headers=headers)
+                res = await client.post(url, json={"max_count": max_count}, headers=headers)
                 data = res.json()
                 if res.status_code == 200 and "data" in data and "videos" in data["data"]:
                     v_items = [TikTokVideoItem(**v) for v in data["data"]["videos"]]
@@ -158,9 +143,7 @@ class TikTokService:
                     )
         except Exception as ex:
             logger.warning(f"Lỗi lấy video TikTok: {ex}")
-
         return TikTokVideoListResponse()
-
 
     async def get_channels(self, user_id: str) -> TikTokChannelListResponse:
         """Lấy danh sách các kênh TikTok của người dùng."""
@@ -247,19 +230,36 @@ class TikTokService:
             },
         }
 
+        is_inbox = False
+        publish_id = ""
+        upload_url = ""
+
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.post(init_url, json=payload, headers=headers)
             init_data = resp.json()
 
-        if resp.status_code != 200 or "data" not in init_data:
-            err = init_data.get("error", {}).get("message") or resp.text
-            logger.error(f"Lỗi khởi tạo upload TikTok: {err}")
-            raise HTTPException(status_code=400, detail=f"Lỗi TikTok Video Init: {err}")
+        if resp.status_code == 200 and "data" in init_data:
+            publish_id = init_data["data"].get("publish_id", "")
+            upload_url = init_data["data"].get("upload_url", "")
+        else:
+            inbox_url = f"{settings.TIKTOK_API_BASE_URL}/post/publish/inbox/video/init/"
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                inbox_resp = await client.post(inbox_url, json={"source_info": payload["source_info"]}, headers=headers)
+                inbox_data = inbox_resp.json()
+            if inbox_resp.status_code == 200 and "data" in inbox_data:
+                publish_id = inbox_data["data"].get("publish_id", "")
+                upload_url = inbox_data["data"].get("upload_url", "")
+                is_inbox = True
+            else:
+                err = init_data.get("error", {}).get("message") or resp.text
+                if "guidelines" in err.lower() or "private" in err.lower():
+                    raise HTTPException(
+                        status_code=400,
+                        detail="TikTok Sandbox yêu cầu tài khoản test phải là 'Tài khoản riêng tư' (vào app TikTok > Cài đặt > Quyền riêng tư > Bật Tài khoản riêng tư).",
+                    )
+                raise HTTPException(status_code=400, detail=f"Lỗi TikTok Video Init: {err}")
 
-        publish_id = init_data["data"].get("publish_id", "")
-        upload_url = init_data["data"].get("upload_url", "")
-
-        # Bước 2: Tải video bytes lên URL máy chủ TikTok
+        # Bước 3: Tải video bytes lên URL máy chủ TikTok
         if upload_url:
             upload_headers = {
                 "Content-Type": "video/mp4",
@@ -276,16 +276,21 @@ class TikTokService:
             "channel_id": request.channel_id,
             "publish_id": publish_id,
             "title": request.title,
-            "privacy_level": request.privacy_level,
+            "privacy_level": chosen_privacy,
             "status": "PROCESSING",
         }
         await self.repo.record_uploaded_video(user_id=user_id, data=log_data)
 
+        msg = (
+            "Đã gửi video vào Hộp thư / Bản nháp (Inbox) trên TikTok thành công!"
+            if is_inbox
+            else "Đã khởi tạo đăng video lên TikTok thành công! TikTok đang xử lý kiểm duyệt nội dung."
+        )
         return PublishTikTokResponse(
             publish_id=publish_id,
             channel_id=request.channel_id,
             status="PROCESSING",
             title=request.title,
             uploaded_at=now,
-            message="Đã khởi tạo đăng video lên TikTok thành công! TikTok đang xử lý kiểm duyệt nội dung.",
+            message=msg,
         )
