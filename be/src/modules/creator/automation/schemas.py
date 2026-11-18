@@ -21,6 +21,16 @@ class TargetYouTubeChannelConfig(BaseModel):
     avatar_url: Optional[str] = Field(None, description="Avatar kênh")
 
 
+class DualSourceConfig(BaseModel):
+    enabled: bool = Field(default=False, description="Bật chế độ ghép 2 nguồn (Hook + Body)")
+    hook_channel_url: Optional[str] = Field(None, description="Link kênh nguồn 1 (Kênh Hook)")
+    hook_channel_name: Optional[str] = Field(None, description="Tên kênh nguồn 1")
+    hook_duration_sec: float = Field(default=3.5, ge=1.0, le=30.0, description="Số giây lấy từ đầu video nguồn 1")
+    body_skip_start_sec: float = Field(default=3.0, ge=0.0, le=60.0, description="Số giây bỏ qua ở đầu video nguồn 2")
+    audio_mode: str = Field(default="sequential", description="Chế độ âm thanh: sequential | body_audio | hook_audio | bgm_override")
+    fallback_policy: str = Field(default="reuse_oldest", description="Chính sách khi hết Hook mới: reuse_oldest | wait | bypass")
+
+
 class AutomationCampaignCreateRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=150, description="Tên chiến dịch Automation")
     source_channels: List[SourceChannelConfig] = Field(
@@ -94,6 +104,9 @@ class AutomationCampaignCreateRequest(BaseModel):
     bgm_volume: Optional[float] = Field(
         default=0.95, ge=0.0, le=2.0, description="Âm lượng nhạc nền BGM (0.0 - 2.0)"
     )
+    dual_source: Optional[DualSourceConfig] = Field(
+        default=None, description="Cấu hình chế độ ghép nối 2 nguồn (Hook + Body)"
+    )
     is_active: bool = Field(default=True, description="Kích hoạt tự động hóa ngay sau khi tạo")
 
 
@@ -119,6 +132,7 @@ class AutomationCampaignUpdateRequest(BaseModel):
     selected_bgm_ids: Optional[List[str]] = None
     keep_original_audio: Optional[bool] = None
     bgm_volume: Optional[float] = None
+    dual_source: Optional[DualSourceConfig] = None
     publish_to_youtube: Optional[bool] = None
     youtube_video_type: Optional[str] = None
     fb_post_type: Optional[str] = None
@@ -172,6 +186,7 @@ class AutomationCampaignResponse(BaseModel):
     selected_bgm_ids: Optional[List[str]] = []
     keep_original_audio: Optional[bool] = False
     bgm_volume: Optional[float] = 0.95
+    dual_source: Optional[DualSourceConfig] = None
     is_active: bool
     status: str
     last_run_at: Optional[str] = None

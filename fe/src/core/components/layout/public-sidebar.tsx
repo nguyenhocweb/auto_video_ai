@@ -80,6 +80,11 @@ export const PublicSidebar: React.FC = () => {
       icon: FaRobot,
     },
     {
+      label: "Ghép Nối Video (Hook)",
+      href: "/creator/stitch",
+      icon: FaLayerGroup,
+    },
+    {
       label: "Kho Nhạc Nền (BGM)",
       href: "/creator/bgm",
       icon: FaMusic,

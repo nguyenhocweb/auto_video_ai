@@ -81,3 +81,29 @@ class ReupTransformer:
             logger.error(f"Lỗi khi biến đổi Re-up Mô hình 2 cho video {item_id}: {e}", exc_info=True)
             return local_video_path
 
+    @classmethod
+    async def apply_dual_source_stitch_if_enabled(
+        cls,
+        local_video_path: str,
+        campaign: Dict[str, Any],
+        item_id: str,
+    ) -> str:
+        """Nếu chiến dịch bật Dual Source Stitching, tiến hành ghép Hook Nguồn 1 vào Body Nguồn 2."""
+        dual_cfg = campaign.get("dual_source") or {}
+        if not dual_cfg.get("enabled"):
+            return local_video_path
+
+        try:
+            from src.modules.creator.automation.dual_source_worker import DualSourceWorker
+            worker = DualSourceWorker()
+            stitched = await worker.prepare_stitched_video(
+                campaign=campaign,
+                body_video_path=local_video_path,
+                body_item_id=item_id,
+            )
+            return stitched or local_video_path
+        except Exception as ex:
+            logger.error(f"Lỗi khi ghép 2 nguồn cho video {item_id}: {ex}")
+            return local_video_path
+
+

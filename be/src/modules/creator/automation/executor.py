@@ -245,6 +245,10 @@ class AutomationExecutor:
                     item_id=item_id,
                 )
 
+            ready_video_path = await ReupTransformer.apply_dual_source_stitch_if_enabled(
+                ready_video_path, campaign, item_id
+            )
+
             # 4. Xuất bản lên Fanpage Facebook (nếu có chọn)
             target_pages = campaign.get("target_pages", [])
             fb_type = campaign.get("fb_post_type", "reel")

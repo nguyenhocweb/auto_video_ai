@@ -53,6 +53,7 @@ export const MobileNav: React.FC = () => {
     { label: "TikTok Studio", href: "/creator/tiktok", icon: SiTiktok },
     { label: "Cấu hình Douyin", href: "/creator/douyin", icon: SiTiktok },
     { label: "Auto Cào & Đăng", href: "/creator/automation", icon: FaRobot },
+    { label: "Ghép Nối Video (Hook)", href: "/creator/stitch", icon: FaLayerGroup },
     { label: "Kho Nhạc Nền", href: "/creator/bgm", icon: FaMusic },
     { label: "Cấu hình AI & GPU", href: "/creator/settings", icon: FaSlidersH },
   ];

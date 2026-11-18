@@ -20,41 +20,29 @@ class AutomationService:
     def __init__(self, repo: Optional[AutomationMongoRepository] = None):
         self.repo = repo or AutomationMongoRepository()
 
-    async def create_campaign(
-        self, user_id: str, req: AutomationCampaignCreateRequest
-    ) -> Dict[str, Any]:
-        data = req.model_dump()
-        return await self.repo.create_campaign(user_id, data)
+    async def create_campaign(self, user_id: str, req: AutomationCampaignCreateRequest) -> Dict[str, Any]:
+        return await self.repo.create_campaign(user_id, req.model_dump())
 
     async def get_user_campaigns(self, user_id: str) -> List[Dict[str, Any]]:
         return await self.repo.get_user_campaigns(user_id)
 
-    async def get_campaign(
-        self, campaign_id: str, user_id: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
+    async def get_campaign(self, campaign_id: str, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
         return await self.repo.get_campaign_by_id(campaign_id, user_id)
 
-    async def update_campaign(
-        self, campaign_id: str, user_id: str, req: AutomationCampaignUpdateRequest
-    ) -> Optional[Dict[str, Any]]:
+    async def update_campaign(self, campaign_id: str, user_id: str, req: AutomationCampaignUpdateRequest) -> Optional[Dict[str, Any]]:
         update_dict = {k: v for k, v in req.model_dump().items() if v is not None}
         return await self.repo.update_campaign(campaign_id, user_id, update_dict)
 
     async def delete_campaign(self, campaign_id: str, user_id: str) -> bool:
         return await self.repo.delete_campaign(campaign_id, user_id)
 
-    async def toggle_active(
-        self, campaign_id: str, user_id: str, is_active: bool
-    ) -> Optional[Dict[str, Any]]:
+    async def toggle_active(self, campaign_id: str, user_id: str, is_active: bool) -> Optional[Dict[str, Any]]:
         return await self.repo.toggle_active(campaign_id, user_id, is_active)
 
-    async def get_logs(
-        self, user_id: str, campaign_id: Optional[str] = None, limit: int = 50
-    ) -> List[Dict[str, Any]]:
+    async def get_logs(self, user_id: str, campaign_id: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
         return await self.repo.get_logs(user_id, campaign_id, limit)
 
     async def get_posted_videos(self, user_id: str, limit: int = 50) -> List[Dict[str, Any]]:
-        """Lấy danh sách các video đã lưu trong database chống trùng."""
         return await self.repo.get_posted_videos(user_id, limit)
 
     async def clear_campaign_error(self, campaign_id: str, user_id: str) -> bool:
@@ -97,6 +85,10 @@ class AutomationService:
         cycle_errors: List[str] = []
 
         try:
+            if campaign.get("dual_source", {}).get("enabled"):
+                from src.modules.creator.automation.dual_source_worker import DualSourceWorker
+                await DualSourceWorker().harvest_hook_channel(campaign)
+
             for ch in source_channels:
                 ch_url = ch.get("channel_url")
                 ch_name = ch.get("name") or "Kênh Nguồn"

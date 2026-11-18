@@ -1,0 +1,167 @@
+import os
+import uuid
+import asyncio
+import logging
+from pathlib import Path
+from typing import Dict, Any, Optional, List
+
+from src.core.config import settings
+from src.core.engines.stitch.video_stitcher import VideoStitcher
+from src.core.engines.douyin.extractor import DouyinExtractor
+from src.modules.creator.automation.hook_pool_repo import HookPoolMongoRepository
+from src.modules.creator.automation.executor_helpers import ExecutorHelpers
+from src.modules.creator.bgm.service import BgmService
+from src.modules.creator.stitch.schemas import (
+    ManualStitchRequest,
+    ManualStitchResponse,
+    HookItemResponse,
+    HookListResponse,
+)
+
+logger = logging.getLogger("stitch_service")
+
+
+class StitchService:
+    def __init__(self, hook_repo: Optional[HookPoolMongoRepository] = None):
+        self.hook_repo = hook_repo or HookPoolMongoRepository()
+        self.bgm_service = BgmService()
+
+    @staticmethod
+    async def _resolve_source_to_local_file(source: str, temp_dir: Path, prefix: str) -> str:
+        """Nếu source là link web Douyin/TikTok -> bóc tách và tải; nếu là file local -> dùng luôn."""
+        s = source.strip()
+        if os.path.exists(s):
+            return s
+
+        if s.startswith("http://") or s.startswith("https://"):
+            logger.info(f"Đang bóc tách video từ đường dẫn web: {s}")
+            info = await DouyinExtractor.extract_no_watermark_video(s)
+            stream_url = info.get("video_url")
+            if not stream_url:
+                raise ValueError(f"Không thể bóc tách luồng MP4 sạch từ link: {s}")
+
+            local_path = str(temp_dir / f"{prefix}_{uuid.uuid4().hex[:6]}.mp4")
+            await asyncio.to_thread(ExecutorHelpers.download_stream_to_file, stream_url, local_path)
+            if not os.path.exists(local_path) or os.path.getsize(local_path) == 0:
+                raise ValueError(f"Tải video từ CDN thất bại: {s}")
+            return local_path
+
+        raise FileNotFoundError(f"Nguồn video không hợp lệ (không phải link web hoặc file tồn tại): {s}")
+
+    async def manual_stitch(self, req: ManualStitchRequest, user_id: str) -> ManualStitchResponse:
+        """Thực hiện ghép nối 2 video thủ công theo yêu cầu."""
+        temp_dir = settings.TEMP_DIR / "manual_stitch"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+
+        raw_hook_path = await self._resolve_source_to_local_file(req.hook_source, temp_dir, "raw_hook")
+        raw_body_path = await self._resolve_source_to_local_file(req.body_source, temp_dir, "raw_body")
+
+        clipped_hook_path = str(temp_dir / f"hook_clip_{uuid.uuid4().hex[:6]}.mp4")
+        out_filename = f"stitch_{uuid.uuid4().hex[:8]}.mp4"
+        out_stitched_path = str(temp_dir / out_filename)
+
+        bgm_path = None
+        if req.audio_mode == "bgm_override" and req.bgm_id:
+            track = await self.bgm_service.get_bgm_by_id(req.bgm_id)
+            if track and track.get("file_path") and os.path.exists(track["file_path"]):
+                bgm_path = track["file_path"]
+
+        try:
+            # 1. Cắt đoạn Hook chuẩn hóa 1080x1920
+            logger.info(f"Cắt Hook ({req.hook_duration}s)...")
+            await asyncio.to_thread(
+                VideoStitcher.extract_hook_clip,
+                raw_video_path=raw_hook_path,
+                duration=req.hook_duration,
+                out_path=clipped_hook_path,
+            )
+
+            # 2. Ghép nối Hook + Body
+            logger.info(f"Tiến hành ghép nối (Bỏ {req.body_skip_start}s đầu của Body)...")
+            await asyncio.to_thread(
+                VideoStitcher.stitch_hook_and_body,
+                hook_path=clipped_hook_path,
+                body_path=raw_body_path,
+                body_skip_sec=req.body_skip_start,
+                out_path=out_stitched_path,
+                audio_mode=req.audio_mode,
+                bgm_path=bgm_path,
+            )
+
+            final_dur = VideoStitcher.get_media_duration(out_stitched_path)
+            preview_url = f"/api/v1/creator/stitch/stream/{out_filename}"
+
+            return ManualStitchResponse(
+                success=True,
+                video_path=out_stitched_path,
+                filename=out_filename,
+                preview_url=preview_url,
+                duration=round(final_dur, 2),
+                hook_duration=req.hook_duration,
+                body_skip_sec=req.body_skip_start,
+                audio_mode=req.audio_mode,
+                message="Ghép nối video 2 nguồn thành công!",
+            )
+        finally:
+            # Dọn dẹp clip hook tạm sau khi đã ghép
+            if os.path.exists(clipped_hook_path):
+                try:
+                    os.remove(clipped_hook_path)
+                except Exception:
+                    pass
+
+    async def get_hooks(self, campaign_id: Optional[str] = None) -> HookListResponse:
+        """Lấy danh sách các đoạn Hook trong kho đệm."""
+        query = {}
+        if campaign_id:
+            query["campaign_id"] = campaign_id
+
+        cursor = self.hook_repo.col.find(query).sort("created_at", -1).limit(100)
+        items: List[HookItemResponse] = []
+        available_cnt = 0
+        used_cnt = 0
+
+        async for doc in cursor:
+            st = doc.get("status", "available")
+            if st == "available":
+                available_cnt += 1
+            else:
+                used_cnt += 1
+
+            items.append(
+                HookItemResponse(
+                    id=str(doc.get("id") or doc.get("_id")),
+                    campaign_id=str(doc.get("campaign_id", "")),
+                    item_id=str(doc.get("item_id", "")),
+                    video_url=doc.get("video_url", ""),
+                    title=doc.get("title", ""),
+                    hook_path=doc.get("hook_path", ""),
+                    duration=float(doc.get("duration", 0.0)),
+                    status=st,
+                    used_count=int(doc.get("used_count", 0)),
+                    created_at=str(doc.get("created_at", "")),
+                )
+            )
+
+        return HookListResponse(
+            total=len(items),
+            available_count=available_cnt,
+            used_count=used_cnt,
+            hooks=items,
+        )
+
+    async def delete_hook(self, hook_id: str) -> bool:
+        """Xóa một Hook khỏi kho đệm và dọn dẹp file vật lý."""
+        doc = await self.hook_repo.col.find_one({"id": hook_id})
+        if not doc:
+            return False
+
+        hook_path = doc.get("hook_path")
+        if hook_path and os.path.exists(hook_path):
+            try:
+                os.remove(hook_path)
+            except Exception as ex:
+                logger.warning(f"Không thể xóa file {hook_path}: {ex}")
+
+        res = await self.hook_repo.col.delete_one({"id": hook_id})
+        return res.deleted_count > 0
