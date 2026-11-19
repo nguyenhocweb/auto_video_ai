@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Video AI - AI Voice & Video Automation Studio",
   description: "Nền tảng tự động hóa Video và tạo giọng đọc AI (OmniVoice & Voice Cloning)",
   other: {
-    "tiktok-developers-site-verification": "Xdyjl5xToVqWAh29lHyxrjKOX9fzgTj2",
+    "tiktok-developers-site-verification": "XdyjI5xToVqWAh29lHyxrjKOX9fzgTj2",
   },
 };
 
