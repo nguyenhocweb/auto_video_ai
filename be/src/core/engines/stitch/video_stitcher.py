@@ -56,26 +56,35 @@ class VideoStitcher:
         has_audio = VideoStitcher.has_audio_stream(raw_video_path)
 
         # Tạo nền video mờ (Blurred Background) thay vì dải đen nếu tỷ lệ video gốc khác với tỷ lệ đích
-        filter_complex = (
+        filter_parts = [
             f"[0:v]split[bg_in][fg_in];"
             f"[bg_in]scale={tw}:{th}:force_original_aspect_ratio=increase,"
             f"crop={tw}:{th},boxblur=25:5,eq=brightness=-0.08:contrast=1.05,setsar=1,fps=30[bg];"
             f"[fg_in]scale={tw}:{th}:force_original_aspect_ratio=decrease,setsar=1,fps=30[fg];"
             f"[bg][fg]overlay=(W-w)/2:(H-h)/2[vout]"
-        )
+        ]
 
         cmd = [
             "ffmpeg", "-y", "-ss", "0", "-t", str(duration), "-i", str(p_in),
-            "-filter_complex", filter_complex, "-map", "[vout]",
         ]
+
         if has_audio:
-            cmd.extend(["-map", "0:a:0", "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2"])
+            cmd.extend([
+                "-filter_complex", "".join(filter_parts),
+                "-map", "[vout]", "-map", "0:a:0",
+                "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2",
+            ])
         else:
-            cmd.extend(["-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-map", "1:a", "-shortest"])
+            filter_parts.append(";anullsrc=channel_layout=stereo:sample_rate=44100[aout]")
+            cmd.extend([
+                "-filter_complex", "".join(filter_parts),
+                "-map", "[vout]", "-map", "[aout]",
+                "-c:a", "aac", "-b:a", "192k",
+            ])
 
         cmd.extend([
             "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
-            "-pix_fmt", "yuv420p", str(p_out),
+            "-pix_fmt", "yuv420p", "-shortest", str(p_out),
         ])
 
         logger.info(f"Đang cắt Hook clip ({duration}s, {aspect_ratio}) sang: {out_path}")
@@ -172,7 +181,7 @@ class VideoStitcher:
             elif has_body_a:
                 af = f";[1:a]atrim=start={body_skip_sec},asetpts=PTS-STARTPTS,aformat=channel_layouts=stereo:sample_rates=44100[aout]"
             elif has_hook_a:
-                af = ";[0:a]aformat=channel_layouts=stereo:sample_rates=44100[aout]"
+                af = ";[0:a]aformat=channel_layouts=stereo:sample_rates=44100,apad[aout]"
             else:
                 af = ";anullsrc=channel_layout=stereo:sample_rate=44100[aout]"
             filter_parts.append(af)
