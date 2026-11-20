@@ -24,6 +24,7 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
   const [bodySource, setBodySource] = useState("");
   const [bodySkipStart, setBodySkipStart] = useState<number>(3.0);
   const [audioMode, setAudioMode] = useState<AudioMode>("sequential");
+  const [selectedBgmIds, setSelectedBgmIds] = useState<string[]>([]);
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "16:9">("9:16");
   const [transitionDuration, setTransitionDuration] = useState<number>(1.2);
   const [isLoadingSamples, setIsLoadingSamples] = useState(false);
@@ -39,6 +40,7 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
         setBodySkipStart(3.0);
         setAspectRatio("9:16");
         setAudioMode("sequential");
+        setSelectedBgmIds([]);
         setTransitionDuration(1.2);
         toast.success(
           "Đã nạp 2 video mẫu test thành công! Bạn có thể chọn chế độ bên dưới và bấm 'Render Video Coi Thử'."
@@ -54,6 +56,7 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
   const handleResetSources = () => {
     setHookSource("");
     setBodySource("");
+    setSelectedBgmIds([]);
     toast.info("Đã xóa trắng nguồn để bạn tự chọn/tải lên 2 video mới.");
   };
 
@@ -67,6 +70,16 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
       toast.warning("Vui lòng chọn, tải lên hoặc nhập link cho Nguồn 2 (Thân bài)");
       return;
     }
+    if (audioMode === "bgm_override" && selectedBgmIds.length === 0) {
+      toast.warning("Bạn đã chọn chế độ 'Đè Nhạc Nền Mới' nhưng chưa chọn bài hát nào. Vui lòng bấm 'Mở Kho Nhạc' để chọn bài!");
+      return;
+    }
+
+    let finalBgmId: string | undefined = undefined;
+    if (audioMode === "bgm_override" && selectedBgmIds.length > 0) {
+      finalBgmId = selectedBgmIds[Math.floor(Math.random() * selectedBgmIds.length)];
+    }
+
     onSubmit({
       hook_source: hookSource.trim(),
       hook_duration: Number(hookDuration),
@@ -75,6 +88,8 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
       audio_mode: audioMode,
       aspect_ratio: aspectRatio,
       transition_duration: Number(transitionDuration),
+      bgm_id: finalBgmId,
+      bgm_ids: selectedBgmIds,
     });
   };
 
@@ -214,8 +229,14 @@ export const StitchManualForm: React.FC<StitchManualFormProps> = ({
         />
       </div>
 
-      {/* Bộ chọn âm thanh */}
-      <StitchAudioSelector value={audioMode} onChange={setAudioMode} disabled={isPending} />
+      {/* Bộ chọn âm thanh & Kho BGM */}
+      <StitchAudioSelector
+        value={audioMode}
+        onChange={setAudioMode}
+        selectedBgmIds={selectedBgmIds}
+        onChangeBgmIds={setSelectedBgmIds}
+        disabled={isPending}
+      />
 
       {/* Nút Submit */}
       <div className="pt-2 flex justify-end">

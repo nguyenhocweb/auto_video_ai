@@ -9,6 +9,7 @@ export interface ManualStitchPayload {
   aspect_ratio?: "9:16" | "16:9";
   transition_duration?: number;
   bgm_id?: string | null;
+  bgm_ids?: string[];
 }
 
 export interface ManualStitchResult {

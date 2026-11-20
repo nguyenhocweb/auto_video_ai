@@ -61,12 +61,25 @@ class StitchService:
         out_stitched_path = str(temp_dir / out_filename)
 
         bgm_path = None
-        if req.audio_mode == "bgm_override" and req.bgm_id:
-            track = await self.bgm_service.get_bgm_by_id(req.bgm_id)
-            if track:
-                file_path = track.get("file_path")
-                if file_path and isinstance(file_path, str) and os.path.exists(file_path):
-                    bgm_path = file_path
+        if req.audio_mode == "bgm_override":
+            chosen_bgm_id = None
+            if req.bgm_ids and len(req.bgm_ids) > 0:
+                import random
+                chosen_bgm_id = random.choice(req.bgm_ids)
+                logger.info(f"Đã random chọn bài BGM '{chosen_bgm_id}' từ danh sách {len(req.bgm_ids)} bài")
+            elif req.bgm_id:
+                chosen_bgm_id = req.bgm_id
+
+            if chosen_bgm_id:
+                track = await self.bgm_service.get_bgm_by_id(chosen_bgm_id)
+                if track:
+                    file_path = track.get("file_path")
+                    if file_path and isinstance(file_path, str) and os.path.exists(file_path):
+                        bgm_path = file_path
+                    elif file_path:
+                        cand = settings.BGM_STORAGE_DIR / Path(file_path).name
+                        if cand.exists():
+                            bgm_path = str(cand)
 
         try:
             # 1. Cắt đoạn Hook chuẩn hóa theo aspect_ratio (9:16 hoặc 16:9)

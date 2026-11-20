@@ -11,6 +11,7 @@ class ManualStitchRequest(BaseModel):
     aspect_ratio: str = Field(default="9:16", description="Tỷ lệ khung hình: '9:16' (Dọc) hoặc '16:9' (Ngang)")
     transition_duration: float = Field(default=1.2, ge=0.4, le=5.0, description="Thời lượng chuyển cảnh xfade (giây) - mặc định 1.2s chuyển cảnh chậm mượt mà")
     bgm_id: Optional[str] = Field(None, description="ID bài nhạc nền nếu chọn bgm_override")
+    bgm_ids: Optional[List[str]] = Field(default=None, description="Danh sách các ID bài nhạc nền từ Kho BGM để hệ thống random chọn 1 bài cho video này")
 
 
 class ManualStitchResponse(BaseModel):
