@@ -9,7 +9,6 @@ import { useDeleteBgm } from "../hook/useDeleteBgm";
 import { BgmTrack } from "../type/bgm.type";
 import { BgmTrackItem } from "./BgmTrackItem";
 import { BgmUploadModal } from "./BgmUploadModal";
-import { BgmSourcesCard } from "./BgmSourcesCard";
 
 interface BgmLibraryModalProps {
   isOpen: boolean;
@@ -254,11 +253,6 @@ export const BgmLibraryModal: React.FC<BgmLibraryModalProps> = ({
             </div>
           </div>
         )}
-
-        {/* Nguồn Kho Nhạc Miễn Phí Bên Ngoài */}
-        <div className="mt-3 pt-3 border-t border-gray-100 shrink-0">
-          <BgmSourcesCard />
-        </div>
       </div>
 
       <BgmUploadModal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} />

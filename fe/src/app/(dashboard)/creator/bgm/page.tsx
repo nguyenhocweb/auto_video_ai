@@ -9,7 +9,6 @@ import { useDeleteBgm } from "@/src/features/creator/bgm/hook/useDeleteBgm";
 import { BgmTrack } from "@/src/features/creator/bgm/type/bgm.type";
 import { BgmTrackItem } from "@/src/features/creator/bgm/component/BgmTrackItem";
 import { BgmUploadModal } from "@/src/features/creator/bgm/component/BgmUploadModal";
-import { BgmSourcesCard } from "@/src/features/creator/bgm/component/BgmSourcesCard";
 
 export default function BgmStudioPage() {
   const [selectedMood, setSelectedMood] = useState("all");
@@ -109,9 +108,6 @@ export default function BgmStudioPage() {
             <span>Tải Lên Bài Nhạc Mới</span>
           </button>
         </div>
-
-        {/* Mỏ Vàng Nguồn Nhạc Ngoài */}
-        <BgmSourcesCard />
 
         {/* Danh Sách Bài Nhạc Trong Kho */}
         <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
