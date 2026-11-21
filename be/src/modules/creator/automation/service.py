@@ -62,12 +62,12 @@ class AutomationService:
         """Thực thi một chu kỳ cào video mới và đăng lên Facebook cho một chiến dịch."""
         campaign_id = campaign["id"]
         user_id = campaign["user_id"]
-        interval = campaign.get("crawl_interval_minutes", 30)
-        source_channels = campaign.get("source_channels", [])
+        interval = campaign.get("crawl_interval_minutes") or 30
+        source_channels = campaign.get("source_channels") or []
         only_new = campaign.get("only_new_unprocessed", True)
         only_today = campaign.get("only_today", True)
         max_age_hours = float(campaign.get("max_video_age_hours") if campaign.get("max_video_age_hours") is not None else (24 if only_today else 0))
-        max_videos = campaign.get("max_videos_per_crawl", 1)
+        max_videos = campaign.get("max_videos_per_crawl") or 1
 
         now_dt = get_vn_now()
         now_str = to_vn_iso(now_dt)
@@ -85,7 +85,7 @@ class AutomationService:
         cycle_errors: List[str] = []
 
         try:
-            if campaign.get("dual_source", {}).get("enabled"):
+            if (campaign.get("dual_source") or {}).get("enabled"):
                 from src.modules.creator.automation.dual_source_worker import DualSourceWorker
                 await DualSourceWorker().harvest_hook_channel(campaign)
 
