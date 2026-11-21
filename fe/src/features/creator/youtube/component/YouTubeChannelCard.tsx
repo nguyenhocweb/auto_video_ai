@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { FaYoutube, FaPlus, FaTrashAlt, FaSpinner, FaUsers, FaVideo } from "react-icons/fa";
+import { FaYoutube, FaPlus, FaTrashAlt, FaSpinner, FaUsers, FaVideo, FaEnvelope } from "react-icons/fa";
 import { useYouTubeChannels } from "../hook/useYouTubeChannels";
 import { useConnectYouTube } from "../hook/useConnectYouTube";
 import { useDisconnectYouTubeChannel } from "../hook/useDisconnectYouTubeChannel";
@@ -109,6 +109,12 @@ export const YouTubeChannelCard: React.FC = () => {
                     <p className="text-[10px] text-gray-400 truncate">
                       {ch.custom_url || ch.channel_id}
                     </p>
+                    {ch.google_email && (
+                      <p className="text-[10px] text-emerald-600 font-medium truncate flex items-center gap-1 mt-0.5" title={`Tài khoản Google: ${ch.google_email}`}>
+                        <FaEnvelope className="text-[9px] shrink-0" />
+                        <span className="truncate">{ch.google_email}</span>
+                      </p>
+                    )}
                     <div className="flex items-center gap-2 text-[10px] text-gray-500 mt-1">
                       <span className="flex items-center gap-1">
                         <FaUsers className="text-[9px] text-blue-500" />

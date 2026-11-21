@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { FaUsers, FaVideo, FaExternalLinkAlt, FaPlus, FaYoutube } from "react-icons/fa";
+import { FaUsers, FaVideo, FaExternalLinkAlt, FaPlus, FaYoutube, FaEnvelope } from "react-icons/fa";
 import { YouTubeChannelItem } from "../type/youtube.type";
 
 interface YouTubeStatsOverviewProps {
@@ -53,9 +53,17 @@ export const YouTubeStatsOverview: React.FC<YouTubeStatsOverviewProps> = ({
                 Liên Kết Vĩnh Viễn
               </span>
             </div>
-            <p className="text-xs text-red-100/90 mt-1">
-              Handle: <code className="font-mono bg-black/20 px-1.5 py-0.5 rounded text-white">{channel.custom_url || channel.channel_id}</code>
-            </p>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-red-100/90 mt-1">
+              <span>
+                Handle: <code className="font-mono bg-black/20 px-1.5 py-0.5 rounded text-white">{channel.custom_url || channel.channel_id}</code>
+              </span>
+              {channel.google_email && (
+                <span className="inline-flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded text-white/95" title={`Tài khoản Google: ${channel.google_email}`}>
+                  <FaEnvelope className="text-[10px] text-emerald-300" />
+                  <span>{channel.google_email}</span>
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

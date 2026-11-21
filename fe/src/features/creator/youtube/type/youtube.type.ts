@@ -2,6 +2,7 @@ export interface YouTubeChannelItem {
   id?: string;
   channel_id: string;
   channel_title: string;
+  google_email?: string;
   custom_url?: string;
   avatar_url?: string;
   subscriber_count: number;
@@ -20,6 +21,7 @@ export interface YouTubeChannelResponse {
   is_connected: boolean;
   channel_id?: string;
   channel_title?: string;
+  google_email?: string;
   custom_url?: string;
   avatar_url?: string;
   subscriber_count: number;

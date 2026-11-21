@@ -164,7 +164,7 @@ export const PublishShortsModal: React.FC<PublishShortsModalProps> = ({
                 >
                   {channels.map((ch) => (
                     <option key={ch.channel_id} value={ch.channel_id}>
-                      {ch.channel_title} ({ch.subscriber_count.toLocaleString()} sub)
+                      {ch.channel_title} {ch.google_email ? `(${ch.google_email})` : `(${ch.subscriber_count.toLocaleString()} sub)`}
                     </option>
                   ))}
                 </select>

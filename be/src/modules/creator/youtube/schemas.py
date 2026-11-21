@@ -10,6 +10,7 @@ class YouTubeChannelItem(BaseModel):
     id: Optional[str] = None
     channel_id: str = ""
     channel_title: str = "Kênh YouTube"
+    google_email: Optional[str] = None
     custom_url: Optional[str] = None
     avatar_url: Optional[str] = None
     subscriber_count: int = 0
@@ -28,6 +29,7 @@ class YouTubeChannelResponse(BaseModel):
     is_connected: bool
     channel_id: Optional[str] = None
     channel_title: Optional[str] = None
+    google_email: Optional[str] = None
     custom_url: Optional[str] = None
     avatar_url: Optional[str] = None
     subscriber_count: Optional[int] = 0

@@ -16,6 +16,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",
     "https://www.googleapis.com/auth/youtube",
+    "https://www.googleapis.com/auth/userinfo.email",
 ]
 
 
@@ -114,3 +115,19 @@ class YouTubeAuthHelper:
                 "subscriber_count": int(stats.get("subscriberCount", 0)),
                 "video_count": int(stats.get("videoCount", 0)),
             }
+
+    @staticmethod
+    async def get_google_user_email(access_token: str) -> Optional[str]:
+        """Lấy địa chỉ Gmail/Google Account của người dùng sở hữu token qua UserInfo endpoint."""
+        headers = {"Authorization": f"Bearer {access_token.strip()}"}
+        url = "https://www.googleapis.com/oauth2/v3/userinfo"
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                res = await client.get(url, headers=headers)
+                if res.status_code == 200:
+                    data = res.json()
+                    return data.get("email")
+                logger.warning(f"Không thể lấy email Google UserInfo: {res.text}")
+        except Exception as e:
+            logger.warning(f"Lỗi gọi Google UserInfo API: {e}")
+        return None

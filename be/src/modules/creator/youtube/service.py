@@ -37,6 +37,7 @@ class YouTubeService:
             raise ValueError("Không nhận được access_token từ Google.")
 
         ch_info = await YouTubePublisher.get_my_channel(access_token)
+        google_email = await YouTubePublisher.get_google_user_email(access_token)
         doc_data = {
             "channel_id": ch_info["channel_id"],
             "channel_title": ch_info["title"],
@@ -46,6 +47,7 @@ class YouTubeService:
             "video_count": ch_info.get("video_count", 0),
             "access_token": access_token,
             "expires_in": expires_in,
+            "google_email": google_email,
         }
         if refresh_token:
             doc_data["refresh_token"] = refresh_token
@@ -62,6 +64,7 @@ class YouTubeService:
                 id=c.get("id"),
                 channel_id=str(c.get("channel_id") or ""),
                 channel_title=str(c.get("channel_title") or "Kênh YouTube"),
+                google_email=c.get("google_email"),
                 custom_url=c.get("custom_url"),
                 avatar_url=c.get("avatar_url"),
                 subscriber_count=int(c.get("subscriber_count") or 0),
@@ -110,6 +113,7 @@ class YouTubeService:
             is_connected=True,
             channel_id=ch.get("channel_id"),
             channel_title=ch.get("channel_title"),
+            google_email=ch.get("google_email"),
             custom_url=ch.get("custom_url"),
             avatar_url=ch.get("avatar_url"),
             subscriber_count=ch.get("subscriber_count", 0),

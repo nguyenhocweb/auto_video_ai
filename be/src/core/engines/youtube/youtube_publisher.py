@@ -18,6 +18,7 @@ class YouTubePublisher:
     exchange_code_for_tokens = staticmethod(YouTubeAuthHelper.exchange_code_for_tokens)
     refresh_access_token = staticmethod(YouTubeAuthHelper.refresh_access_token)
     get_my_channel = staticmethod(YouTubeAuthHelper.get_my_channel)
+    get_google_user_email = staticmethod(YouTubeAuthHelper.get_google_user_email)
 
     @staticmethod
     async def upload_shorts(
