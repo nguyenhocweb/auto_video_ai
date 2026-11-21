@@ -59,6 +59,14 @@ class AutomationCampaignCreateRequest(BaseModel):
     caption_template: str = Field(
         default="{title}", description="Mẫu tiêu đề/mô tả bài đăng (mặc định lấy {title} đã dịch)"
     )
+    title_mode: Optional[str] = Field(
+        default="auto_number",
+        description="Chế độ tiêu đề: 'auto_number' (Bài đăng 1, 2...) hoặc 'original_title'",
+    )
+    custom_title_prefix: Optional[str] = Field(
+        default="Bài đăng",
+        description="Tiền tố tiêu đề khi dùng auto_number (VD: 'Bài đăng' -> 'Bài đăng 1')",
+    )
     hashtags: Optional[str] = Field(
         default="#Douyin #Reels #Trending #VideoAI",
         description="Hashtags bổ sung gán vào cuối bài đăng",
@@ -121,6 +129,8 @@ class AutomationCampaignUpdateRequest(BaseModel):
     target_pages: Optional[List[TargetPageConfig]] = None
     target_youtube_channels: Optional[List[TargetYouTubeChannelConfig]] = None
     caption_template: Optional[str] = None
+    title_mode: Optional[str] = None
+    custom_title_prefix: Optional[str] = None
     hashtags: Optional[str] = None
     auto_add_title_tag: Optional[bool] = None
     crawl_interval_minutes: Optional[int] = None
@@ -197,6 +207,8 @@ class AutomationCampaignResponse(BaseModel):
     last_run_at: Optional[str] = None
     next_run_at: Optional[str] = None
     total_posted: int = 0
+    title_mode: Optional[str] = "auto_number"
+    custom_title_prefix: Optional[str] = "Bài đăng"
     last_error: Optional[str] = None
     created_at: str
     updated_at: str

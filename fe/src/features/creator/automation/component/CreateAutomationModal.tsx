@@ -53,6 +53,8 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
   const [voiceName, setVoiceName] = useState<string | undefined>(undefined);
   const [selectedBgmIds, setSelectedBgmIds] = useState<string[]>([]);
   const [keepOriginalAudio, setKeepOriginalAudio] = useState(false);
+  const [titleMode, setTitleMode] = useState<"auto_number" | "original_title">("auto_number");
+  const [titlePrefix, setTitlePrefix] = useState<string>("Bài đăng");
   const [autoAddTag, setAutoAddTag] = useState(true);
   const [hashtags, setHashtags] = useState("#Douyin #Reels #Shorts #Viral");
 
@@ -83,6 +85,8 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       setVoiceName(initialData.voice_name);
       setSelectedBgmIds(initialData.selected_bgm_ids || []);
       setKeepOriginalAudio(initialData.keep_original_audio || false);
+      setTitleMode(initialData.title_mode || "auto_number");
+      setTitlePrefix(initialData.custom_title_prefix || "Bài đăng");
       setAutoAddTag(initialData.auto_add_title_tag);
       setHashtags(initialData.hashtags || "#Douyin #Reels #Shorts #Viral");
     } else {
@@ -103,6 +107,8 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       setVoiceName(undefined);
       setSelectedBgmIds([]);
       setKeepOriginalAudio(false);
+      setTitleMode("auto_number");
+      setTitlePrefix("Bài đăng");
       setAutoAddTag(true);
       setHashtags("#Douyin #Reels #Shorts #Viral");
     }
@@ -144,6 +150,8 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
       voice_name: voiceName,
       selected_bgm_ids: selectedBgmIds,
       keep_original_audio: keepOriginalAudio,
+      title_mode: titleMode,
+      custom_title_prefix: titlePrefix.trim() || "Bài đăng",
       auto_add_title_tag: autoAddTag,
       hashtags: hashtags.trim(),
       remove_subtitles: true,
@@ -226,6 +234,10 @@ export const CreateAutomationModal: React.FC<CreateAutomationModalProps> = ({
           />
 
           <HashtagConfigSection
+            titleMode={titleMode}
+            onChangeTitleMode={setTitleMode}
+            titlePrefix={titlePrefix}
+            onChangeTitlePrefix={setTitlePrefix}
             autoAddTag={autoAddTag}
             onChangeAutoAdd={setAutoAddTag}
             hashtags={hashtags}

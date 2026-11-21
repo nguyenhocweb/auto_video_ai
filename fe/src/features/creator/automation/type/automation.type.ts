@@ -42,6 +42,8 @@ export interface AutomationCampaign {
   target_pages: TargetPageConfig[];
   target_youtube_channels?: TargetYouTubeChannelConfig[];
   caption_template: string;
+  title_mode?: "auto_number" | "original_title";
+  custom_title_prefix?: string;
   hashtags?: string;
   auto_add_title_tag: boolean;
   crawl_interval_minutes: number;
@@ -78,6 +80,8 @@ export interface AutomationCampaignCreatePayload {
   target_pages: TargetPageConfig[];
   target_youtube_channels?: TargetYouTubeChannelConfig[];
   caption_template?: string;
+  title_mode?: "auto_number" | "original_title";
+  custom_title_prefix?: string;
   hashtags?: string;
   auto_add_title_tag?: boolean;
   crawl_interval_minutes?: number;
@@ -107,6 +111,8 @@ export interface AutomationCampaignUpdatePayload {
   target_pages?: TargetPageConfig[];
   target_youtube_channels?: TargetYouTubeChannelConfig[];
   caption_template?: string;
+  title_mode?: "auto_number" | "original_title";
+  custom_title_prefix?: string;
   hashtags?: string;
   auto_add_title_tag?: boolean;
   crawl_interval_minutes?: number;

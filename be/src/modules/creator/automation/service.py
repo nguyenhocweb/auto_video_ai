@@ -177,10 +177,12 @@ class AutomationService:
                     log_id = str(log_doc.get("id") or log_doc.get("_id") or "")
 
                     try:
+                        current_post_num = int(campaign.get("total_posted", 0)) + total_new_posted + 1
                         res = await AutomationExecutor.process_and_publish_video(
                             campaign=campaign,
                             video_item=v,
                             source_name=ch_name,
+                            post_number=current_post_num,
                         )
 
                         # Xác định trạng thái tổng thể lượt đăng (Facebook + YouTube Đa Kênh)

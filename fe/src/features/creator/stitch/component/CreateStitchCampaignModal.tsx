@@ -53,6 +53,8 @@ export const CreateStitchCampaignModal: React.FC<CreateStitchCampaignModalProps>
   const [intervalMin, setIntervalMin] = useState<number>(240);
   const [maxVideoAgeHours, setMaxVideoAgeHours] = useState<number>(4);
   const [onlyNew, setOnlyNew] = useState<boolean>(true);
+  const [titleMode, setTitleMode] = useState<"auto_number" | "original_title">("auto_number");
+  const [titlePrefix, setTitlePrefix] = useState<string>("Bài đăng");
   const [autoAddTag, setAutoAddTag] = useState<boolean>(true);
   const [hashtags, setHashtags] = useState<string>("#Shorts #Reels #Viral #Douyin");
 
@@ -79,6 +81,8 @@ export const CreateStitchCampaignModal: React.FC<CreateStitchCampaignModalProps>
       setIntervalMin(initialData.crawl_interval_minutes || 240);
       setMaxVideoAgeHours(initialData.max_video_age_hours ?? 4);
       setOnlyNew(initialData.only_new_unprocessed ?? true);
+      setTitleMode(initialData.title_mode || "auto_number");
+      setTitlePrefix(initialData.custom_title_prefix || "Bài đăng");
       setAutoAddTag(initialData.auto_add_title_tag ?? true);
       setHashtags(initialData.hashtags || "#Shorts #Reels #Viral #Douyin");
     } else {
@@ -98,6 +102,8 @@ export const CreateStitchCampaignModal: React.FC<CreateStitchCampaignModalProps>
       setIntervalMin(240);
       setMaxVideoAgeHours(4);
       setOnlyNew(true);
+      setTitleMode("auto_number");
+      setTitlePrefix("Bài đăng");
       setAutoAddTag(true);
       setHashtags("#Shorts #Reels #Viral #Douyin");
     }
@@ -149,6 +155,8 @@ export const CreateStitchCampaignModal: React.FC<CreateStitchCampaignModalProps>
       processing_mode: "download_only",
       selected_bgm_ids: selectedBgmIds,
       keep_original_audio: audioMode !== "bgm_override",
+      title_mode: titleMode,
+      custom_title_prefix: titlePrefix.trim() || "Bài đăng",
       auto_add_title_tag: autoAddTag,
       hashtags: hashtags.trim(),
       remove_subtitles: true,
@@ -232,6 +240,10 @@ export const CreateStitchCampaignModal: React.FC<CreateStitchCampaignModalProps>
           />
 
           <HashtagConfigSection
+            titleMode={titleMode}
+            onChangeTitleMode={setTitleMode}
+            titlePrefix={titlePrefix}
+            onChangeTitlePrefix={setTitlePrefix}
             autoAddTag={autoAddTag}
             onChangeAutoAdd={setAutoAddTag}
             hashtags={hashtags}

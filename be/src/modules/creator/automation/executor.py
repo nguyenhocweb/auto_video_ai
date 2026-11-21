@@ -86,7 +86,11 @@ class AutomationExecutor:
         results: List[Dict[str, Any]] = []
         yt_service = YouTubeService()
         is_shorts = (video_type == "shorts")
-        clean_title = (title[:90] + " #shorts").strip() if is_shorts and len(title) > 90 else f"{title} #shorts" if is_shorts else title[:100].strip()
+        clean_title = title.strip()
+        if is_shorts and "#shorts" not in clean_title.lower():
+            clean_title = (clean_title[:90] + " #shorts").strip() if len(clean_title) > 90 else f"{clean_title} #shorts"
+        else:
+            clean_title = clean_title[:100].strip()
 
         # Nếu không chỉ định kênh, mặc định đăng lên kênh đầu tiên của user
         channel_list = channels if channels else [{"channel_id": None, "channel_title": "Kênh YouTube"}]
@@ -109,24 +113,15 @@ class AutomationExecutor:
                     ),
                 )
                 results.append({
-                    "channel_id": ch_id,
-                    "channel_title": ch_title,
-                    "success": res.success,
-                    "video_id": res.video_id,
-                    "shorts_url": res.shorts_url,
-                    "watch_url": res.watch_url,
-                    "video_type": ch_vtype,
-                    "error": res.error,
+                    "channel_id": ch_id, "channel_title": ch_title, "success": res.success,
+                    "video_id": res.video_id, "shorts_url": res.shorts_url, "watch_url": res.watch_url,
+                    "video_type": ch_vtype, "error": res.error,
                 })
             except Exception as yt_err:
                 logger.error(f"Lỗi xuất bản YouTube kênh '{ch_title}': {yt_err}")
                 results.append({
-                    "channel_id": ch_id,
-                    "channel_title": ch_title,
-                    "success": False,
-                    "video_id": None,
-                    "shorts_url": None,
-                    "error": str(yt_err),
+                    "channel_id": ch_id, "channel_title": ch_title, "success": False,
+                    "video_id": None, "shorts_url": None, "error": str(yt_err),
                 })
         return results
 
@@ -136,6 +131,7 @@ class AutomationExecutor:
         campaign: Dict[str, Any],
         video_item: Dict[str, Any],
         source_name: str,
+        post_number: int = 1,
     ) -> Dict[str, Any]:
         """Quy trình bóc tách, dịch thuật, xử lý video và tự động đăng lên Facebook & YouTube."""
         raw_title = (video_item.get("title") or "").strip()
@@ -146,31 +142,41 @@ class AutomationExecutor:
         item_id = str(video_item.get("item_id", uuid.uuid4().hex[:8]))
         user_id = campaign.get("user_id", "default_user")
 
-        # 1. Dịch tiêu đề sang tiếng Việt nếu video gốc có tiêu đề
+        # 1. Xác định Tiêu đề bài đăng: Ưu tiên 'Bài đăng {n}' chống trùng lặp tên Douyin rác
+        is_dual_source = bool((campaign.get("dual_source") or {}).get("enabled"))
+        title_mode = campaign.get("title_mode", "auto_number" if is_dual_source else "auto_number")
+        prefix = (campaign.get("custom_title_prefix") or "Bài đăng").strip()
+
         translated_title = await ExecutorHelpers.translate_to_vietnamese(raw_title) if raw_title else ""
         if translated_title in ["Video Mới Cực Hot", "Video Douyin Mới"]:
             translated_title = ""
 
-        # 2. Xây dựng Caption và Hashtags: Nếu video gốc KHÔNG CÓ NAME, TUYỆT ĐỐI KHÔNG ĐỂ NAME VÀO!
+        if title_mode == "auto_number" or not translated_title:
+            base_title = f"{prefix} {post_number}"
+        else:
+            base_title = translated_title
+
+        # 2. Xây dựng Hashtags (Nếu auto_number thì chỉ dùng config_hashtags)
         tags_str = ExecutorHelpers.generate_hashtags(
-            title=translated_title,
+            title=translated_title if title_mode != "auto_number" else "",
             config_hashtags=campaign.get("hashtags"),
-            auto_add_title_tag=bool(translated_title and campaign.get("auto_add_title_tag", True)),
+            auto_add_title_tag=bool(translated_title and campaign.get("auto_add_title_tag", True) and title_mode != "auto_number"),
         )
 
         caption_tpl = campaign.get("caption_template", "{title}")
-        if translated_title:
-            caption_body = caption_tpl.replace("{title}", translated_title).strip()
-            final_caption = f"{caption_body}\n\n{tags_str}".strip() if tags_str else caption_body
-        else:
-            # Video không có tên -> Lọc bỏ tag {title}, chỉ dùng nội dung sạch & hashtags
-            clean_tpl = re.sub(r"\{title\}[\s\:\-]*", "", caption_tpl).strip()
-            final_caption = f"{clean_tpl}\n\n{tags_str}".strip() if clean_tpl and tags_str else (clean_tpl or tags_str)
+        caption_body = caption_tpl.replace("{title}", base_title).strip()
+        final_caption = f"{caption_body}\n\n{tags_str}".strip() if tags_str else caption_body
 
         if re.search(r"[\u4e00-\u9fff]", final_caption):
             final_caption = re.sub(r"[\u4e00-\u9fff]", "", final_caption).strip()
             final_caption = re.sub(r"#\s+", "", final_caption)
             final_caption = re.sub(r"#$", "", final_caption).strip()
+
+        # Ghép tiêu đề kèm đầy đủ hashtags cho YouTube Shorts (tối đa 100 ký tự)
+        yt_title = base_title
+        if tags_str:
+            combined = f"{base_title} {tags_str}".strip()
+            yt_title = combined if len(combined) <= 100 else f"{combined[:97].strip()}..."
 
         # 3. Trích xuất luồng MP4 sạch logo: Ưu tiên dùng ngay stream URL đã bắt được khi quét kênh
         clean_stream_url = video_item.get("clean_stream_url")
@@ -265,24 +271,21 @@ class AutomationExecutor:
                     user_id=user_id,
                     channels=target_yt_channels,
                     video_path=ready_video_path,
-                    title=translated_title,
+                    title=yt_title,
                     description=final_caption,
                     video_type=yt_type,
                 )
         finally:
-            # Dọn dẹp triệt để toàn bộ file video tạm sau khi đăng bài để chống tràn ổ cứng
             for p in {local_mp4_path, ready_video_path}:
-                try:
-                    if p and os.path.exists(p):
-                        os.remove(p)
-                except Exception:
-                    pass
+                if p and os.path.exists(p):
+                    try: os.remove(p)
+                    except Exception: pass
 
         return {
             "video_item_id": item_id,
             "video_url": video_url,
             "video_original_title": raw_title,
-            "video_translated_title": translated_title,
+            "video_translated_title": base_title,
             "source_channel_name": source_name,
             "caption": final_caption,
             "processing_mode": processing_mode,
