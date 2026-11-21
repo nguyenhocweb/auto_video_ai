@@ -10,26 +10,45 @@ import {
   FaVideo,
   FaYoutube,
   FaClock,
+  FaTrashAlt,
+  FaShieldAlt,
 } from "react-icons/fa";
 import { YouTubeVideoItem } from "../type/youtube.type";
 import { formatVietnamTime } from "@/src/core/lib/date-utils";
+import { YouTubeRestrictionCell } from "./YouTubeRestrictionCell";
+import { YouTubeVisibilityCell } from "./YouTubeVisibilityCell";
+import { YouTubeDeleteConfirmModal } from "./YouTubeDeleteConfirmModal";
+import { useDeleteYouTubeVideo } from "../hook/useDeleteYouTubeVideo";
 
 interface YouTubeVideosTableProps {
   videos: YouTubeVideoItem[];
   isLoading: boolean;
+  channelId?: string;
 }
 
 export const YouTubeVideosTable: React.FC<YouTubeVideosTableProps> = ({
   videos,
   isLoading,
+  channelId,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedVideoToDelete, setSelectedVideoToDelete] = useState<YouTubeVideoItem | null>(null);
+
+  const deleteMutation = useDeleteYouTubeVideo();
 
   const totalItems = videos.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const startIndex = (currentPage - 1) * pageSize;
   const currentVideos = videos.slice(startIndex, startIndex + pageSize);
+
+  const handleConfirmDelete = async (chId: string, vidId: string, title: string) => {
+    await deleteMutation.mutateAsync({
+      channelId: chId,
+      videoId: vidId,
+      videoTitle: title,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -64,7 +83,7 @@ export const YouTubeVideosTable: React.FC<YouTubeVideosTableProps> = ({
             <span>Danh Sách Video &amp; Shorts Đã Đăng ({totalItems})</span>
           </h3>
           <p className="text-xs text-gray-400 mt-0.5">
-            Dữ liệu thống kê thời gian thực từ YouTube Data API
+            Giám sát thời gian thực: Hạn chế bản quyền, chế độ hiển thị và xóa an toàn
           </p>
         </div>
 
@@ -91,11 +110,12 @@ export const YouTubeVideosTable: React.FC<YouTubeVideosTableProps> = ({
           <thead>
             <tr className="bg-gray-50/70 border-y border-gray-100 text-gray-500 font-bold uppercase tracking-wider text-[10px]">
               <th className="py-3 px-5">Video &amp; Tiêu đề</th>
+              <th className="py-3 px-3">Thông báo</th>
+              <th className="py-3 px-3">Chế độ hiển thị</th>
               <th className="py-3 px-4">Thời gian đăng</th>
-              <th className="py-3 px-4 text-center">Lượt xem</th>
-              <th className="py-3 px-4 text-center">Thích</th>
-              <th className="py-3 px-4 text-center">Bình luận</th>
-              <th className="py-3 px-4 text-right">Xem trên YouTube</th>
+              <th className="py-3 px-3 text-center">Lượt xem</th>
+              <th className="py-3 px-3 text-center">Tương tác</th>
+              <th className="py-3 px-4 text-right">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -107,7 +127,7 @@ export const YouTubeVideosTable: React.FC<YouTubeVideosTableProps> = ({
 
               return (
                 <tr key={v.id} className="hover:bg-gray-50/60 transition-colors">
-                  <td className="py-3 px-5 max-w-[340px]">
+                  <td className="py-3 px-5 max-w-[300px]">
                     <div className="flex items-center gap-3">
                       <div className="w-16 h-10 rounded-lg bg-gray-100 flex-shrink-0 relative overflow-hidden border border-gray-200">
                         {v.thumbnail ? (
@@ -135,19 +155,40 @@ export const YouTubeVideosTable: React.FC<YouTubeVideosTableProps> = ({
                         >
                           {v.title.replace(/^Video\s*\d+\s*(#Video\d+\s*)?/i, "").trim() || v.title}
                         </a>
-                        <span
-                          className={`inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${
-                            isShorts
-                              ? "bg-red-50 text-red-700 border-red-200"
-                              : "bg-blue-50 text-blue-700 border-blue-200"
-                          }`}
-                        >
-                          {isShorts ? "Shorts" : "Video Thường"}
-                        </span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span
+                            className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${
+                              isShorts
+                                ? "bg-red-50 text-red-700 border-red-200"
+                                : "bg-blue-50 text-blue-700 border-blue-200"
+                            }`}
+                          >
+                            {isShorts ? "Shorts" : "Video Thường"}
+                          </span>
+                          {v.is_deleted && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-gray-100 text-gray-600 border border-gray-200 flex items-center gap-1">
+                              <FaShieldAlt className="text-[8px] text-emerald-600" /> Đã xóa trên YT
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </td>
 
+                  {/* Cột Thông Báo (Hạn chế bản quyền - Tooltip) */}
+                  <td className="py-3 px-3 whitespace-nowrap">
+                    <YouTubeRestrictionCell
+                      restriction={v.restriction}
+                      detail={v.restriction_detail}
+                    />
+                  </td>
+
+                  {/* Cột Chế Độ Hiển Thị */}
+                  <td className="py-3 px-3 whitespace-nowrap">
+                    <YouTubeVisibilityCell status={v.privacy_status} />
+                  </td>
+
+                  {/* Thời gian đăng */}
                   <td className="py-3 px-4 text-gray-500 whitespace-nowrap">
                     <div className="flex items-center gap-1.5 text-[11px]">
                       <FaClock className="text-gray-400 text-[10px]" />
@@ -155,37 +196,59 @@ export const YouTubeVideosTable: React.FC<YouTubeVideosTableProps> = ({
                     </div>
                   </td>
 
-                  <td className="py-3 px-4 text-center whitespace-nowrap">
+                  {/* Lượt xem */}
+                  <td className="py-3 px-3 text-center whitespace-nowrap">
                     <span className="inline-flex items-center gap-1 font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
                       <FaEye className="text-[10px]" />
                       {v.views.toLocaleString()}
                     </span>
                   </td>
 
-                  <td className="py-3 px-4 text-center whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">
-                      <FaHeart className="text-[10px]" />
-                      {v.likes.toLocaleString()}
-                    </span>
+                  {/* Tương tác */}
+                  <td className="py-3 px-3 text-center whitespace-nowrap">
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="inline-flex items-center gap-1 font-semibold text-rose-600 text-[11px]">
+                        <FaHeart className="text-[9px]" />
+                        {v.likes}
+                      </span>
+                      <span className="inline-flex items-center gap-1 font-semibold text-gray-500 text-[11px]">
+                        <FaComment className="text-[9px]" />
+                        {v.comments}
+                      </span>
+                    </div>
                   </td>
 
-                  <td className="py-3 px-4 text-center whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                      <FaComment className="text-[10px]" />
-                      {v.comments.toLocaleString()}
-                    </span>
-                  </td>
-
+                  {/* Thao tác */}
                   <td className="py-3 px-4 text-right whitespace-nowrap">
-                    <a
-                      href={primaryUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-700 font-bold text-[11px] transition-colors"
-                    >
-                      <span>{isShorts ? "Mở Shorts" : "Xem Video"}</span>
-                      <FaExternalLinkAlt className="text-[9px]" />
-                    </a>
+                    <div className="inline-flex items-center gap-1.5">
+                      <a
+                        href={primaryUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 rounded-lg bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-600 transition-colors"
+                        title="Xem trên YouTube"
+                      >
+                        <FaExternalLinkAlt className="text-xs" />
+                      </a>
+
+                      {channelId && !v.is_deleted ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedVideoToDelete(v)}
+                          className="p-2 rounded-lg bg-gray-100 hover:bg-red-600 hover:text-white text-gray-500 transition-all cursor-pointer"
+                          title="Xóa vĩnh viễn khỏi YouTube (Vẫn giữ DB chống cào lại)"
+                        >
+                          <FaTrashAlt className="text-xs" />
+                        </button>
+                      ) : v.is_deleted ? (
+                        <span
+                          className="p-2 rounded-lg bg-gray-50 text-gray-300 cursor-not-allowed"
+                          title="Video này đã được xóa trên YouTube và đang khóa chống cào lại"
+                        >
+                          <FaTrashAlt className="text-xs" />
+                        </span>
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               );
@@ -220,7 +283,16 @@ export const YouTubeVideosTable: React.FC<YouTubeVideosTableProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modal xác nhận xóa an toàn */}
+      <YouTubeDeleteConfirmModal
+        isOpen={Boolean(selectedVideoToDelete)}
+        onClose={() => setSelectedVideoToDelete(null)}
+        video={selectedVideoToDelete}
+        channelId={channelId || ""}
+        onConfirm={handleConfirmDelete}
+        isPending={deleteMutation.isPending}
+      />
     </div>
   );
 };
-

@@ -87,3 +87,44 @@ class YouTubeMongoRepository:
         async for doc in cursor:
             items.append(self._doc_to_dict(doc))
         return items
+
+    async def mark_video_deleted_from_youtube(
+        self, user_id: str, video_id: str, channel_id: Optional[str] = None
+    ) -> None:
+        """Đánh dấu video đã bị xóa khỏi YouTube, giữ lại DB để chống cào/đăng lại."""
+        now = to_vn_iso(get_vn_now())
+        await self.videos_col.update_many(
+            {"user_id": str(user_id), "video_id": str(video_id)},
+            {
+                "$set": {
+                    "status": "deleted_from_youtube",
+                    "is_deleted_from_youtube": True,
+                    "deleted_at": now,
+                    "updated_at": now,
+                }
+            },
+        )
+        posted_col = self.db["posted_videos"]
+        await posted_col.update_many(
+            {"user_id": str(user_id), "published_youtube_channels.video_id": str(video_id)},
+            {
+                "$set": {
+                    "published_youtube_channels.$.status": "deleted_from_youtube",
+                    "published_youtube_channels.$.deleted_at": now,
+                    "is_blacklisted": True,
+                }
+            },
+        )
+
+    async def get_deleted_video_ids(self, user_id: str) -> set:
+        """Lấy danh sách các video_id đã bị xóa trên YouTube của user."""
+        cursor = self.videos_col.find(
+            {"user_id": str(user_id), "is_deleted_from_youtube": True},
+            {"video_id": 1},
+        )
+        s = set()
+        async for doc in cursor:
+            vid = doc.get("video_id")
+            if vid:
+                s.add(str(vid))
+        return s

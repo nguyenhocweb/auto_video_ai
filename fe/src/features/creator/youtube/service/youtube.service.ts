@@ -7,6 +7,7 @@ import {
   AvailableVideo,
   PublishShortsRequest,
   PublishShortsResponse,
+  DeleteYouTubeVideoResponse,
 } from "../type/youtube.type";
 
 export const youtubeService = {
@@ -48,6 +49,16 @@ export const youtubeService = {
   async disconnectChannel(channelId: string): Promise<{ success: boolean; message: string }> {
     const res = await axiosClient.delete<{ success: boolean; message: string }>(
       `/api/v1/creator/youtube/channels/${channelId}`
+    );
+    return res.data;
+  },
+
+  async deleteVideo(
+    channelId: string,
+    videoId: string
+  ): Promise<DeleteYouTubeVideoResponse> {
+    const res = await axiosClient.delete<DeleteYouTubeVideoResponse>(
+      `/api/v1/creator/youtube/channels/${channelId}/videos/${videoId}`
     );
     return res.data;
   },

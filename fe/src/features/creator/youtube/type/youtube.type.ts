@@ -38,8 +38,19 @@ export interface YouTubeVideoItem {
   likes: number;
   comments: number;
   duration?: string;
+  privacy_status?: "public" | "unlisted" | "private" | string;
+  restriction?: "none" | "region_blocked" | "copyright" | "claim" | "rejected" | string;
+  restriction_detail?: string;
+  is_deleted?: boolean;
   shorts_url: string;
   watch_url: string;
+}
+
+export interface DeleteYouTubeVideoResponse {
+  success: boolean;
+  video_id: string;
+  message: string;
+  blacklisted: boolean;
 }
 
 export interface YouTubeVideoListResponse {

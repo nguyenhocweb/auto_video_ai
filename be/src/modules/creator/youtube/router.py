@@ -11,6 +11,7 @@ from src.modules.creator.youtube.schemas import (
     AvailableVideoItem,
     PublishShortsRequest,
     PublishShortsResponse,
+    DeleteYouTubeVideoResponse,
 )
 from src.modules.creator.youtube.service import YouTubeService
 
@@ -144,6 +145,24 @@ async def upload_and_publish_shorts(
                 temp_path.unlink()
         except Exception:
             pass
+
+
+@router.delete("/channels/{channel_id}/videos/{video_id}", response_model=DeleteYouTubeVideoResponse)
+async def delete_channel_video(
+    channel_id: str,
+    video_id: str,
+    current_user=Depends(get_current_user),
+):
+    """Xóa vĩnh viễn video khỏi Kênh YouTube, giữ lại thông tin trong DB để chống cào/đăng lại."""
+    try:
+        return await service.delete_video(
+            user_id=_get_user_id(current_user),
+            channel_id=channel_id,
+            video_id=video_id,
+        )
+    except Exception as ex:
+        logger.error(f"Lỗi xóa video YouTube {video_id}: {ex}")
+        raise HTTPException(status_code=400, detail=str(ex))
 
 
 @router.delete("/channels/{channel_id}")

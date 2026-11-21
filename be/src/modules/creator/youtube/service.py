@@ -12,6 +12,7 @@ from src.modules.creator.youtube.schemas import (
     AvailableVideoItem,
     PublishShortsRequest,
     PublishShortsResponse,
+    DeleteYouTubeVideoResponse,
 )
 
 logger = logging.getLogger("youtube_service")
@@ -170,17 +171,35 @@ class YouTubeService:
     async def get_channel_videos(
         self, user_id: str, channel_id: Optional[str] = None, limit: int = 25
     ) -> YouTubeVideoListResponse:
-        """Lấy danh sách video của Kênh YouTube."""
+        """Lấy danh sách video của Kênh YouTube kèm trạng thái đã xóa DB."""
         try:
             acc_tok = await self.get_valid_access_token(user_id, channel_id)
             raw_vids = await YouTubePublisher.get_channel_videos(
                 access_token=acc_tok, channel_id=channel_id, max_results=limit
             )
-            items = [YouTubeVideoItem(**v) for v in raw_vids]
+            deleted_ids = await self.repo.get_deleted_video_ids(user_id)
+            items = []
+            for v in raw_vids:
+                is_del = v.get("id") in deleted_ids
+                items.append(YouTubeVideoItem(**v, is_deleted=is_del))
             return YouTubeVideoListResponse(total=len(items), videos=items)
         except Exception as e:
             logger.error(f"Lỗi lấy video kênh {channel_id}: {e}")
             return YouTubeVideoListResponse(total=0, videos=[])
+
+    async def delete_video(
+        self, user_id: str, channel_id: str, video_id: str
+    ) -> DeleteYouTubeVideoResponse:
+        """Xóa video vĩnh viễn trên YouTube qua API và cập nhật DB để chống cào lại."""
+        acc_tok = await self.get_valid_access_token(user_id, channel_id)
+        await YouTubePublisher.delete_video(acc_tok, video_id)
+        await self.repo.mark_video_deleted_from_youtube(user_id, video_id, channel_id)
+        return DeleteYouTubeVideoResponse(
+            success=True,
+            video_id=video_id,
+            message=f"Đã xóa video {video_id} khỏi kênh YouTube thành công và lưu vết chống cào lại.",
+            blacklisted=True,
+        )
 
     @staticmethod
     def get_available_rendered_videos() -> List[AvailableVideoItem]:

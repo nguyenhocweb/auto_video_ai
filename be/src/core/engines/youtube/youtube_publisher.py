@@ -5,113 +5,19 @@ from typing import Dict, Any, List, Optional
 import httpx
 from src.core.config import settings
 from src.core.engines.youtube.video_aspect_converter import VideoAspectConverter
+from src.core.engines.youtube.youtube_auth import YouTubeAuthHelper, API_BASE, UPLOAD_BASE
 
 logger = logging.getLogger("youtube_publisher")
 
-AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
-TOKEN_URL = "https://oauth2.googleapis.com/token"
-API_BASE = "https://www.googleapis.com/youtube/v3"
-UPLOAD_BASE = "https://www.googleapis.com/upload/youtube/v3"
-
-SCOPES = [
-    "https://www.googleapis.com/auth/youtube.upload",
-    "https://www.googleapis.com/auth/youtube.readonly",
-    "https://www.googleapis.com/auth/youtube",
-]
-
 
 class YouTubePublisher:
-    @staticmethod
-    def get_auth_url(state: Optional[str] = None) -> str:
-        """Tạo đường link xác thực OAuth 2.0 (access_type=offline để lấy refresh_token vĩnh viễn)."""
-        client_id = getattr(settings, "YOUTUBE_CLIENT_ID", "").strip()
-        redirect_uri = getattr(settings, "YOUTUBE_REDIRECT_URI", "").strip()
-        if not client_id:
-            raise ValueError("Thiếu cấu hình YOUTUBE_CLIENT_ID trong .env")
+    """Engine lõi xử lý tải lên, truy vấn và quản lý video trên YouTube Data API v3."""
 
-        scope_str = " ".join(SCOPES)
-        import urllib.parse
-        params = {
-            "client_id": client_id,
-            "redirect_uri": redirect_uri,
-            "response_type": "code",
-            "scope": scope_str,
-            "access_type": "offline",
-            "prompt": "consent",
-        }
-        if state:
-            params["state"] = state
-        return f"{AUTH_URL}?{urllib.parse.urlencode(params)}"
-
-    @staticmethod
-    async def exchange_code_for_tokens(code: str) -> Dict[str, Any]:
-        """Đổi mã Authorization Code lấy access_token và refresh_token vĩnh viễn."""
-        client_id = getattr(settings, "YOUTUBE_CLIENT_ID", "").strip()
-        client_secret = getattr(settings, "YOUTUBE_CLIENT_SECRET", "").strip()
-        redirect_uri = getattr(settings, "YOUTUBE_REDIRECT_URI", "").strip()
-
-        payload = {
-            "code": code.strip(),
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "redirect_uri": redirect_uri,
-            "grant_type": "authorization_code",
-        }
-
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            res = await client.post(TOKEN_URL, data=payload)
-            if res.status_code != 200:
-                raise ValueError(f"Google OAuth Error: {res.text}")
-            return res.json()
-
-    @staticmethod
-    async def refresh_access_token(refresh_token: str) -> Dict[str, Any]:
-        """Dùng refresh_token vĩnh viễn để tự động cấp mới access_token."""
-        client_id = getattr(settings, "YOUTUBE_CLIENT_ID", "").strip()
-        client_secret = getattr(settings, "YOUTUBE_CLIENT_SECRET", "").strip()
-
-        payload = {
-            "refresh_token": refresh_token.strip(),
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "grant_type": "refresh_token",
-        }
-
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            res = await client.post(TOKEN_URL, data=payload)
-            if res.status_code != 200:
-                raise ValueError(f"Google Refresh Error: {res.text}")
-            return res.json()
-
-    @staticmethod
-    async def get_my_channel(access_token: str) -> Dict[str, Any]:
-        """Lấy thông tin kênh YouTube chính chủ (Tên kênh, Avatar, Số người đăng ký)."""
-        headers = {"Authorization": f"Bearer {access_token.strip()}"}
-        url = f"{API_BASE}/channels?part=snippet,statistics&mine=true"
-
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            res = await client.get(url, headers=headers)
-            if res.status_code != 200:
-                raise ValueError(f"Lỗi lấy thông tin kênh YouTube: {res.text}")
-            data = res.json()
-            items = data.get("items", [])
-            if not items:
-                raise ValueError("Không tìm thấy kênh YouTube nào gắn với tài khoản này.")
-
-            ch = items[0]
-            snippet = ch.get("snippet", {})
-            stats = ch.get("statistics", {})
-            thumbnails = snippet.get("thumbnails", {})
-            avatar = thumbnails.get("default", {}).get("url") or thumbnails.get("medium", {}).get("url")
-
-            return {
-                "channel_id": ch.get("id"),
-                "title": snippet.get("title", "Kênh YouTube"),
-                "custom_url": snippet.get("customUrl"),
-                "avatar_url": avatar,
-                "subscriber_count": int(stats.get("subscriberCount", 0)),
-                "video_count": int(stats.get("videoCount", 0)),
-            }
+    # Ủy quyền các hàm OAuth sang YouTubeAuthHelper để đảm bảo chuẩn đơn trách nhiệm
+    get_auth_url = staticmethod(YouTubeAuthHelper.get_auth_url)
+    exchange_code_for_tokens = staticmethod(YouTubeAuthHelper.exchange_code_for_tokens)
+    refresh_access_token = staticmethod(YouTubeAuthHelper.refresh_access_token)
+    get_my_channel = staticmethod(YouTubeAuthHelper.get_my_channel)
 
     @staticmethod
     async def upload_shorts(
@@ -123,69 +29,47 @@ class YouTubePublisher:
         privacy_status: str = "public",
         video_type: str = "video",
     ) -> Dict[str, Any]:
-        """
-        Tải video lên YouTube qua Resumable Upload API.
-        Hỗ trợ:
-        - video_type="video": Video dài chuẩn (16:9, phim, review), KHÔNG gắn ép buộc #Shorts.
-        - video_type="shorts": Video ngắn dọc (9:16 <= 60s), tự động gắn #Shorts.
-        """
+        """Tải video lên Kênh YouTube với cơ chế Resumable Upload protocol."""
         p = Path(video_path)
         if not p.exists():
             raise FileNotFoundError(f"Không tìm thấy file video: {video_path}")
 
-        file_size = p.stat().st_size
-        clean_title = title.strip()
-        clean_desc = description.strip()
-
         is_shorts = (video_type == "shorts")
-        converted_file: Optional[Path] = None
+        converted_file = None
+        clean_title = title.strip()
+        if is_shorts and "#shorts" not in clean_title.lower():
+            clean_title = f"{clean_title} #shorts"
+
+        if is_shorts and not VideoAspectConverter.is_vertical_video(str(p)):
+            converted_path = VideoAspectConverter.convert_to_vertical_shorts(str(p))
+            converted_file = Path(converted_path)
+            p = converted_file
+
+        file_size = p.stat().st_size
+        headers = {
+            "Authorization": f"Bearer {access_token.strip()}",
+            "Content-Type": "application/json; charset=UTF-8",
+            "X-Upload-Content-Type": "video/mp4",
+            "X-Upload-Content-Length": str(file_size),
+        }
+
+        body_meta = {
+            "snippet": {
+                "title": clean_title[:100],
+                "description": description or f"{clean_title}\n\n#Shorts #Reels",
+                "tags": tags or ["Shorts", "VideoAI"],
+                "categoryId": "22",
+            },
+            "status": {
+                "privacyStatus": privacy_status,
+                "selfDeclaredMadeForKids": False,
+            },
+        }
 
         try:
-            if is_shorts:
-                conv = VideoAspectConverter.ensure_vertical_9_16(str(p))
-                if conv != str(p):
-                    converted_file = Path(conv)
-                    p = converted_file
-                file_size = p.stat().st_size
-                if "#Shorts" not in clean_title and "#shorts" not in clean_title:
-                    clean_title = f"{clean_title} #Shorts"
-                if "#Shorts" not in clean_desc and "#shorts" not in clean_desc:
-                    clean_desc = f"{clean_desc}\n\n#Shorts #Viral"
-                default_tags = ["Shorts", "Viral", "Reels"]
-            else:
-                conv = VideoAspectConverter.ensure_horizontal_16_9(str(p))
-                if conv != str(p):
-                    converted_file = Path(conv)
-                    p = converted_file
-                file_size = p.stat().st_size
-                default_tags = ["Review Phim", "Phim Hay", "Video"]
-
-            clean_title = clean_title[:100]  # Giới hạn 100 ký tự của YouTube
-
-            meta_payload = {
-                "snippet": {
-                    "title": clean_title,
-                    "description": clean_desc,
-                    "tags": tags or default_tags,
-                    "categoryId": "22",  # People & Blogs / Film
-                },
-                "status": {
-                    "privacyStatus": privacy_status,
-                    "selfDeclaredMadeForKids": False,
-                },
-            }
-
-            # Bước 1: Khởi tạo Resumable Upload Session
-            init_url = f"{UPLOAD_BASE}/videos?uploadType=resumable&part=snippet,status"
-            init_headers = {
-                "Authorization": f"Bearer {access_token.strip()}",
-                "Content-Type": "application/json; charset=UTF-8",
-                "X-Upload-Content-Type": "video/mp4",
-                "X-Upload-Content-Length": str(file_size),
-            }
-
             async with httpx.AsyncClient(timeout=60.0) as client:
-                init_res = await client.post(init_url, headers=init_headers, json=meta_payload)
+                init_url = f"{UPLOAD_BASE}/videos?uploadType=resumable&part=snippet,status"
+                init_res = await client.post(init_url, headers=headers, json=body_meta)
                 if init_res.status_code != 200:
                     raise ValueError(f"Lỗi khởi tạo upload YouTube: {init_res.text}")
 
@@ -193,7 +77,6 @@ class YouTubePublisher:
                 if not upload_url:
                     raise ValueError("Không nhận được Upload Location từ YouTube.")
 
-                # Bước 2: Truyền stream video lên máy chủ YouTube
                 with open(p, "rb") as f:
                     video_data = f.read()
 
@@ -231,7 +114,7 @@ class YouTubePublisher:
     async def get_channel_videos(
         access_token: str, channel_id: Optional[str] = None, max_results: int = 25
     ) -> List[Dict[str, Any]]:
-        """Lấy danh sách video/Shorts của kênh qua playlist Uploads (tiết kiệm 98% quota)."""
+        """Lấy danh sách video của kênh kèm thông tin thống kê, chế độ hiển thị và hạn chế bản quyền."""
         headers = {"Authorization": f"Bearer {access_token.strip()}"}
         uploads_id = None
         if channel_id and channel_id.startswith("UC"):
@@ -259,12 +142,13 @@ class YouTubePublisher:
             if not vid_ids:
                 return []
 
-            v_url = f"{API_BASE}/videos?part=snippet,statistics,contentDetails&id={','.join(vid_ids)}"
+            # Truy vấn chi tiết video bao gồm statistics, contentDetails và status (chế độ riêng tư, vi phạm bản quyền)
+            v_url = f"{API_BASE}/videos?part=snippet,statistics,contentDetails,status&id={','.join(vid_ids)}"
             v_res = await client.get(v_url, headers=headers)
-            stats_map = {}
+            detail_map = {}
             if v_res.status_code == 200:
                 for v in v_res.json().get("items", []):
-                    stats_map[v.get("id")] = v
+                    detail_map[v.get("id")] = v
 
             results = []
             for it in pl_items:
@@ -272,10 +156,36 @@ class YouTubePublisher:
                 if not vid_id:
                     continue
                 snippet = it.get("snippet", {})
-                v_detail = stats_map.get(vid_id, {})
+                v_detail = detail_map.get(vid_id, {})
                 v_stats = v_detail.get("statistics", {})
+                v_status = v_detail.get("status", {})
+                c_details = v_detail.get("contentDetails", {})
+
                 thumbs = snippet.get("thumbnails", {})
                 thumb_url = thumbs.get("high", {}).get("url") or thumbs.get("medium", {}).get("url") or thumbs.get("default", {}).get("url")
+
+                # Phân tích hạn chế bản quyền và kiểm duyệt
+                upload_status = v_status.get("uploadStatus", "processed")
+                rejection_reason = v_status.get("rejectionReason")
+                region_restriction = c_details.get("regionRestriction", {})
+                privacy = v_status.get("privacyStatus", "public")
+
+                restriction = "none"
+                restriction_detail = "Không có thông báo. Video này đang tiếp cận người xem và đủ điều kiện theo cài đặt của bạn."
+
+                if rejection_reason in ["claim", "copyright"]:
+                    restriction = "copyright"
+                    restriction_detail = f"Khiếu nại bản quyền ({rejection_reason}). Video bị hạn chế hiển thị hoặc gỡ bỏ âm thanh."
+                elif rejection_reason:
+                    restriction = "rejected"
+                    restriction_detail = f"Bị từ chối: {rejection_reason}."
+                elif region_restriction.get("blocked"):
+                    cnt = len(region_restriction.get("blocked", []))
+                    restriction = "region_blocked"
+                    restriction_detail = f"Hạn chế vùng: Bị chặn phát tại {cnt} quốc gia/vùng lãnh thổ do bản quyền."
+                elif upload_status == "rejected":
+                    restriction = "rejected"
+                    restriction_detail = "Video bị từ chối phê duyệt trên YouTube."
 
                 results.append({
                     "id": vid_id,
@@ -286,9 +196,26 @@ class YouTubePublisher:
                     "views": int(v_stats.get("viewCount", 0)),
                     "likes": int(v_stats.get("likeCount", 0)),
                     "comments": int(v_stats.get("commentCount", 0)),
-                    "duration": v_detail.get("contentDetails", {}).get("duration", ""),
+                    "duration": c_details.get("duration", ""),
+                    "privacy_status": privacy,
+                    "restriction": restriction,
+                    "restriction_detail": restriction_detail,
                     "shorts_url": f"https://www.youtube.com/shorts/{vid_id}",
                     "watch_url": f"https://www.youtube.com/watch?v={vid_id}",
                 })
             return results
 
+    @staticmethod
+    async def delete_video(access_token: str, video_id: str) -> bool:
+        """Xóa vĩnh viễn một video trên kênh YouTube qua API."""
+        headers = {"Authorization": f"Bearer {access_token.strip()}"}
+        url = f"{API_BASE}/videos?id={video_id.strip()}"
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            res = await client.delete(url, headers=headers)
+            if res.status_code in [200, 204]:
+                logger.info(f"Đã xóa thành công video YouTube {video_id}")
+                return True
+            if res.status_code == 404:
+                logger.warning(f"Video {video_id} đã không còn tồn tại trên YouTube (404)")
+                return True
+            raise ValueError(f"Lỗi xóa video YouTube: ({res.status_code}) {res.text}")

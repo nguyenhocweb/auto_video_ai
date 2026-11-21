@@ -46,8 +46,19 @@ class YouTubeVideoItem(BaseModel):
     likes: int = 0
     comments: int = 0
     duration: Optional[str] = ""
+    privacy_status: Optional[str] = "public"
+    restriction: Optional[str] = "none"
+    restriction_detail: Optional[str] = None
+    is_deleted: bool = False
     shorts_url: str
     watch_url: str
+
+
+class DeleteYouTubeVideoResponse(BaseModel):
+    success: bool
+    video_id: str
+    message: str
+    blacklisted: bool = True
 
 
 class YouTubeVideoListResponse(BaseModel):

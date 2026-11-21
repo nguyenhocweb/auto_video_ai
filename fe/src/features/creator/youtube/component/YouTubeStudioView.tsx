@@ -143,6 +143,7 @@ export const YouTubeStudioView: React.FC = () => {
           <YouTubeVideosTable
             videos={videos}
             isLoading={isLoadingVideos}
+            channelId={selectedChannel.channel_id}
           />
         )}
 
