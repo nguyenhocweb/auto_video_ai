@@ -40,10 +40,16 @@ class YouTubePublisher:
         if is_shorts and "#shorts" not in clean_title.lower():
             clean_title = f"{clean_title} #shorts"
 
-        if is_shorts and not VideoAspectConverter.is_vertical_video(str(p)):
-            converted_path = VideoAspectConverter.convert_to_vertical_shorts(str(p))
-            converted_file = Path(converted_path)
-            p = converted_file
+        if is_shorts:
+            conv = VideoAspectConverter.ensure_vertical_9_16(str(p))
+            if conv != str(p):
+                converted_file = Path(conv)
+                p = converted_file
+        else:
+            conv = VideoAspectConverter.ensure_horizontal_16_9(str(p))
+            if conv != str(p):
+                converted_file = Path(conv)
+                p = converted_file
 
         file_size = p.stat().st_size
         headers = {

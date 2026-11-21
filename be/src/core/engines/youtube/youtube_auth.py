@@ -10,6 +10,7 @@ logger = logging.getLogger("youtube_auth")
 AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 API_BASE = "https://www.googleapis.com/youtube/v3"
+UPLOAD_BASE = "https://www.googleapis.com/upload/youtube/v3"
 
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
