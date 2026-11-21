@@ -11,9 +11,10 @@ import {
 } from "../type/youtube.type";
 
 export const youtubeService = {
-  async getAuthUrl(): Promise<YouTubeAuthUrlResponse> {
+  async getAuthUrl(feOrigin?: string): Promise<YouTubeAuthUrlResponse> {
+    const params = feOrigin ? `?fe_origin=${encodeURIComponent(feOrigin)}` : "";
     const res = await axiosClient.get<YouTubeAuthUrlResponse>(
-      "/api/v1/creator/youtube/auth-url"
+      `/api/v1/creator/youtube/auth-url${params}`
     );
     return res.data;
   },

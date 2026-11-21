@@ -2,6 +2,7 @@ import logging
 from typing import Optional, List, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from fastapi.responses import RedirectResponse
+from src.core.config import settings
 from src.modules.shared.auth.dependencies import get_current_user
 from src.modules.creator.youtube.schemas import (
     YouTubeAuthUrlResponse,
@@ -29,10 +30,16 @@ def _get_user_id(user: Any) -> str:
 
 
 @router.get("/auth-url", response_model=YouTubeAuthUrlResponse)
-async def get_auth_url(current_user=Depends(get_current_user)):
+async def get_auth_url(
+    fe_origin: Optional[str] = Query(None),
+    current_user=Depends(get_current_user),
+):
     """Lấy đường link ủy quyền Google OAuth 2.0 cho Kênh YouTube."""
     try:
-        url = service.get_auth_url(user_id=_get_user_id(current_user))
+        user_id = _get_user_id(current_user)
+        origin = (fe_origin or getattr(settings, "FRONTEND_URL", "https://nguyen-video.vercel.app")).rstrip("/")
+        state = f"{user_id}___{origin}"
+        url = service.get_auth_url(user_id=state)
         return YouTubeAuthUrlResponse(auth_url=url)
     except Exception as ex:
         logger.error(f"Lỗi lấy auth url: {ex}")
@@ -46,20 +53,32 @@ async def oauth_callback(
     error: Optional[str] = Query(None),
 ):
     """Google chuyển hướng về endpoint này sau khi người dùng cấp quyền."""
+    user_id = "default_user"
+    fe_origin = getattr(settings, "FRONTEND_URL", "https://nguyen-video.vercel.app").rstrip("/")
+
+    if state:
+        if "___" in state:
+            parts = state.split("___", 1)
+            user_id = parts[0] or user_id
+            fe_origin = (parts[1] or fe_origin).rstrip("/")
+        else:
+            user_id = state
+
+    fe_redirect = f"{fe_origin}/creator/youtube"
+
     if error:
         logger.warning(f"Google OAuth từ chối cấp quyền: {error}")
-        return RedirectResponse("http://localhost:3002/creator/youtube?youtube_error=access_denied")
+        return RedirectResponse(f"{fe_redirect}?youtube_error=access_denied")
 
     if not code:
         raise HTTPException(status_code=400, detail="Thiếu mã Authorization Code.")
 
-    user_id = state or "default_user"
     try:
         await service.handle_callback(code=code, user_id=user_id)
-        return RedirectResponse("http://localhost:3002/creator/youtube?youtube_connected=true")
+        return RedirectResponse(f"{fe_redirect}?youtube_connected=true")
     except Exception as ex:
         logger.error(f"Lỗi callback OAuth YouTube: {ex}")
-        return RedirectResponse(f"http://localhost:3002/creator/youtube?youtube_error={str(ex)}")
+        return RedirectResponse(f"{fe_redirect}?youtube_error={str(ex)}")
 
 
 @router.get("/channels", response_model=YouTubeChannelListResponse)

@@ -5,7 +5,8 @@ import { youtubeService } from "../service/youtube.service";
 export const useConnectYouTube = () => {
   return useMutation({
     mutationFn: async () => {
-      const res = await youtubeService.getAuthUrl();
+      const origin = typeof window !== "undefined" ? window.location.origin : undefined;
+      const res = await youtubeService.getAuthUrl(origin);
       if (!res.auth_url) {
         throw new Error("Không nhận được URL ủy quyền từ máy chủ.");
       }

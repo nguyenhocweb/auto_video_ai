@@ -57,6 +57,7 @@ class Settings(BaseSettings):
     YOUTUBE_CLIENT_ID: str = ""
     YOUTUBE_CLIENT_SECRET: str = ""
     YOUTUBE_REDIRECT_URI: str = "http://localhost:8001/api/v1/creator/youtube/callback"
+    FRONTEND_URL: str = "https://nguyen-video.vercel.app"
 
     # TikTok Publisher Settings
     TIKTOK_CLIENT_KEY: str = ""
