@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { FaYoutube, FaVideo, FaPlus, FaSyncAlt, FaCog } from "react-icons/fa";
 import { FadeIn } from "@/src/core/components/animation/FadeIn";
 import { YouTubeChannelItem } from "../type/youtube.type";
@@ -24,6 +26,22 @@ export const YouTubeStudioView: React.FC = () => {
   const [selectedChannel, setSelectedChannel] = useState<YouTubeChannelItem | null>(null);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Bắt query param từ Google OAuth Callback để thông báo và làm sạch URL
+  useEffect(() => {
+    const isConnected = searchParams.get("youtube_connected");
+    const errorMsg = searchParams.get("youtube_error");
+
+    if (isConnected === "true") {
+      toast.success("🎉 Đã liên kết Kênh YouTube thành công!");
+      refetchChannels();
+      window.history.replaceState({}, "", "/creator/youtube");
+    } else if (errorMsg) {
+      toast.error(`❌ Liên kết Kênh YouTube thất bại: ${errorMsg}`);
+      window.history.replaceState({}, "", "/creator/youtube");
+    }
+  }, [searchParams, refetchChannels]);
 
   // Tự động chọn Kênh đầu tiên khi có dữ liệu
   useEffect(() => {
