@@ -83,7 +83,7 @@ async def execute_booth_training(job_id: str, voice_name: str, gender: str) -> N
                     break
                 composite_audio += chunk + silence
                 combined_texts.append(s.get("prompt_text", ""))
-                total_duration_ms += len(chunk) + 200
+                total_duration_ms += len(chunk) + 200 
 
         # Nếu không có mẫu hợp lệ nào, báo lỗi
         if total_duration_ms == 0:

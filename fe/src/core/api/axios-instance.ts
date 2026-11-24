@@ -1,6 +1,17 @@
 import axios from "axios";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001";
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001";
+export const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_API_URL || "http://127.0.0.1:8002";
+
+// Danh sách các tiền tố endpoint thuộc cụm AI Engine & Media Worker (Port 8002)
+const AI_ENDPOINT_PREFIXES = [
+  "/api/v1/creator/voice",
+  "/api/v1/creator/dubbing",
+  "/api/v1/creator/video",
+  "/api/v1/stitch",
+  "/api/v1/creator/storyboard",
+  "/api/v1/creator/template-video",
+];
 
 const axiosClient = axios.create({
   baseURL: BASE_URL,
@@ -11,9 +22,12 @@ const axiosClient = axios.create({
   timeout: 300000, // 300s (5 phút) cho AI model loading & generation
 });
 
-// Interceptor request: Tự động đính kèm Access Token
+// Interceptor request: Tự động điều phối Port (8001 Core vs 8002 AI) và đính kèm Access Token
 axiosClient.interceptors.request.use(
   (config) => {
+    const isAiRequest = AI_ENDPOINT_PREFIXES.some((prefix) => config.url?.startsWith(prefix));
+    config.baseURL = isAiRequest ? AI_BASE_URL : BASE_URL;
+
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("access_token");
       if (token) {
