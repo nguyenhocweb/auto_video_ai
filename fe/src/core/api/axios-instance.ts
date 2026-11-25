@@ -7,7 +7,6 @@ export const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_API_URL || "http://127.0.0
 const AI_ENDPOINT_PREFIXES = [
   "/api/v1/creator/voice",
   "/api/v1/creator/dubbing",
-  "/api/v1/creator/video",
   "/api/v1/stitch",
   "/api/v1/creator/storyboard",
   "/api/v1/creator/template-video",
