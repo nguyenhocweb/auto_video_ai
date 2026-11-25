@@ -22,7 +22,9 @@ interface StitchResultCardProps {
 }
 
 export const StitchResultCard: React.FC<StitchResultCardProps> = ({ result }) => {
-  const streamUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}${result.preview_url}`;
+  const streamUrl = result.preview_url.startsWith("http")
+    ? result.preview_url
+    : `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001"}${result.preview_url}`;
   const isLandscape = result.aspect_ratio === "16:9";
 
   return (
