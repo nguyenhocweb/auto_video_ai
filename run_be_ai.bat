@@ -8,7 +8,7 @@ echo                          Cong (Port): 8002
 echo =====================================================================
 echo.
 echo Chon che do khoi dong server AI:
-echo   [1] AI Backend + Ngrok Tunnel (desktop-barley-pushup.ngrok-free.dev - Khuyen dung)
+echo   [1] AI Backend + Ngrok Tunnel (giant-drudge-pastime.ngrok-free.dev - Khuyen dung)
 echo   [2] AI Backend + Cloudflare Tunnel (Cong 8002)
 echo   [3] Chi chay AI Backend Local (Cong 8002)
 echo.
@@ -22,8 +22,8 @@ goto start_backend
 :start_ngrok
 echo.
 echo [*] Dang khoi chay Ngrok Tunnel tinh tai cong 8002...
-start "Video AI - AI Ngrok Tunnel 8002" cmd /k "ngrok http --domain=desktop-barley-pushup.ngrok-free.dev 8002"
-echo [*] Da mo cua so Ngrok Tunnel: https://desktop-barley-pushup.ngrok-free.dev
+start "Video AI - AI Ngrok Tunnel 8002" cmd /k "ngrok http --domain=giant-drudge-pastime.ngrok-free.dev 8002"
+echo [*] Da mo cua so Ngrok Tunnel: https://giant-drudge-pastime.ngrok-free.dev
 goto start_backend
 
 :start_cloudflare
