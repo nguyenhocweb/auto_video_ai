@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { FaMusic, FaPlus, FaHeadphones } from "react-icons/fa";
+import { toast } from "sonner";
 import { FadeIn } from "@/src/core/components/animation/FadeIn";
 import { resolveAudioUrl } from "@/src/core/lib/audio-utils";
 import { useGetBgmTracks } from "@/src/features/creator/bgm/hook/useGetBgmTracks";
@@ -60,6 +61,7 @@ export default function BgmStudioPage() {
         setIsPlaying(true);
       } catch {
         setIsPlaying(false);
+        toast.error(`Không thể phát "${track.title}". File nhạc chưa đồng bộ Cloudinary hoặc bị lỗi nguồn.`);
       }
     }
   };

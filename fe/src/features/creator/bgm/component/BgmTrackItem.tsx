@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaPlay, FaPause, FaTrash, FaCheckCircle, FaVolumeUp, FaShieldAlt, FaSearch, FaCheck } from "react-icons/fa";
+import { FaPlay, FaPause, FaTrash, FaCheckCircle, FaVolumeUp, FaShieldAlt, FaSearch, FaCheck, FaCloud } from "react-icons/fa";
 import { BgmTrack, CopyrightCheckResult } from "../type/bgm.type";
 import { useCheckCopyrightTrack } from "../hook/useCheckCopyright";
 
@@ -105,6 +105,11 @@ export const BgmTrackItem: React.FC<BgmTrackItemProps> = ({
               {track.sanitized && !track.is_preset && (
                 <span className="shrink-0 flex items-center gap-1 text-[10px] text-indigo-700 bg-indigo-50 border border-indigo-200 font-semibold px-1.5 py-0.2 rounded-md">
                   <FaShieldAlt className="text-[9px]" /> Đã khử bản quyền DSP
+                </span>
+              )}
+              {track.audio_url?.startsWith("http") && (
+                <span className="shrink-0 flex items-center gap-1 text-[10px] text-sky-700 bg-sky-50 border border-sky-200 font-semibold px-1.5 py-0.2 rounded-md">
+                  <FaCloud className="text-[9px]" /> Cloudinary
                 </span>
               )}
             </div>

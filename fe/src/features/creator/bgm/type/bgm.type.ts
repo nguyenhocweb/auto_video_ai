@@ -5,6 +5,7 @@ export interface BgmTrack {
   mood: "chill" | "upbeat" | "funny" | "asmr" | "cinematic" | "general" | string;
   duration: number;
   audio_url: string;
+  cloudinary_public_id?: string;
   file_path?: string;
   is_preset: boolean;
   sanitized?: boolean;

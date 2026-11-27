@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { FaTimes, FaPlus, FaHeadphones, FaCheck } from "react-icons/fa";
+import { toast } from "sonner";
 import { resolveAudioUrl } from "@/src/core/lib/audio-utils";
 import { useGetBgmTracks } from "../hook/useGetBgmTracks";
 import { useDeleteBgm } from "../hook/useDeleteBgm";
@@ -104,6 +105,7 @@ export const BgmLibraryModal: React.FC<BgmLibraryModalProps> = ({
         setIsPlaying(true);
       } catch {
         setIsPlaying(false);
+        toast.error(`Không thể phát "${track.title}". File nhạc chưa đồng bộ Cloudinary hoặc bị lỗi nguồn.`);
       }
     }
   };
